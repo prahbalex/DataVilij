@@ -1,10 +1,13 @@
 package dataprocessors;
 
 import javafx.geometry.Point2D;
+import javafx.scene.Cursor;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Tooltip;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 /**
@@ -28,12 +31,29 @@ public final class TSDProcessor {
         }
     }
 
+    public static class DuplicateDataNameException extends Exception{
+        private static final String DUPLICATE_ERROR_MSG = "Duplicate data";
+
+        public DuplicateDataNameException(String name){
+            super(String.format("Invalid data name '%s'." + DUPLICATE_ERROR_MSG));
+        }
+    }
+
     private Map<String, String>  dataLabels;
     private Map<String, Point2D> dataPoints;
 
     public TSDProcessor() {
         dataLabels = new HashMap<>();
         dataPoints = new HashMap<>();
+    }
+
+    public String getKey(XYChart.Data<Number, Number> i){
+        Point2D x = new Point2D(i.getXValue().doubleValue(), i.getYValue().doubleValue());
+        for(String s: dataPoints.keySet()){
+            if(dataPoints.get(s).equals(x))
+                return s;
+        }
+        return "";
     }
 
     /**
@@ -45,6 +65,8 @@ public final class TSDProcessor {
     public void processString(String tsdString) throws Exception {
         AtomicBoolean hadAnError   = new AtomicBoolean(false);
         StringBuilder errorMessage = new StringBuilder();
+        AtomicInteger counter = new AtomicInteger(1);
+        ArrayList<String> strings = new ArrayList<>();
         Stream.of(tsdString.split("\n"))
               .map(line -> Arrays.asList(line.split("\t")))
               .forEach(list -> {
@@ -55,9 +77,21 @@ public final class TSDProcessor {
                       Point2D  point = new Point2D(Double.parseDouble(pair[0]), Double.parseDouble(pair[1]));
                       dataLabels.put(name, label);
                       dataPoints.put(name, point);
-                  } catch (Exception e) {
+                      for(String s:strings){
+                          if(s.equals(name)){
+                              throw new DuplicateDataNameException(name);
+                          }
+                      }
+                      strings.add(name);
+                      counter.getAndIncrement();
+                  } catch (InvalidDataNameException e) {
                       errorMessage.setLength(0);
-                      errorMessage.append(e.getClass().getSimpleName()).append(": ").append(e.getMessage());
+                      errorMessage.append("Invalid Data Name at line " + counter.toString() + " \n");
+                      hadAnError.set(true);
+                  }
+                  catch (Exception e){
+                      errorMessage.setLength(0);
+                      errorMessage.append("Duplicate Data Name at line" + counter.toString() + " \n");
                       hadAnError.set(true);
                   }
               });
@@ -71,6 +105,32 @@ public final class TSDProcessor {
      * @param chart the specified chart
      */
     void toChartData(XYChart<Number, Number> chart) {
+
+        HashSet<Point2D> data = new HashSet<>(dataPoints.values());
+
+        double minimum = 100000000;
+        double maximum = 0;
+        double sumOfY = 0;
+
+        for (Point2D x: data) {
+            if(x.getX() < minimum)
+                minimum = x.getX();
+            if(x.getY() > maximum)
+                maximum = x.getY();
+            sumOfY += x.getY();
+        }
+
+        double average = (sumOfY)/data.size();
+
+        XYChart.Series<Number, Number> averageLine = new XYChart.Series<>();
+
+        averageLine.getData().add(new XYChart.Data<>(minimum, average));
+        averageLine.getData().add(new XYChart.Data<>(maximum, average));
+        averageLine.setName("Average Line");
+
+        ArrayList<String> names = new ArrayList<>();
+
+        boolean added = false;
         Set<String> labels = new HashSet<>(dataLabels.values());
         for (String label : labels) {
             XYChart.Series<Number, Number> series = new XYChart.Series<>();
@@ -80,7 +140,26 @@ public final class TSDProcessor {
                 series.getData().add(new XYChart.Data<>(point.getX(), point.getY()));
             });
             chart.getData().add(series);
+            if(!added){
+                chart.getData().add(averageLine);
+                added = true;
+            }
         }
+        chart.getData().forEach((x) ->{
+            if(!x.getName().equals("Average Line")){
+                x.getNode().setId("css1");
+                x.getNode().setStyle("-fx-stroke: transparent");
+                x.getData().forEach((y) ->{
+                    Tooltip.install(y.getNode(), new Tooltip(getKey(y)));
+                    y.getNode().setCursor(Cursor.HAND);
+                });
+            }
+            else{
+                x.getData().forEach((y) ->{
+                    y.getNode().setId("css2");
+                });
+            }
+        });
     }
 
     void clear() {
@@ -88,9 +167,11 @@ public final class TSDProcessor {
         dataLabels.clear();
     }
 
-    private String checkedname(String name) throws InvalidDataNameException {
+    private String checkedname(String name) throws InvalidDataNameException, DuplicateDataNameException {
         if (!name.startsWith("@"))
             throw new InvalidDataNameException(name);
         return name;
     }
+
+
 }

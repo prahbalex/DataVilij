@@ -11,8 +11,6 @@ public enum AppPropertyTypes {
 
     /* resource files and folders */
     DATA_RESOURCE_PATH,
-    GUI_RESOURCE_PATH,
-    ICONS_RESOURCE_PATH,
 
     /* user interface icon file names */
     SCREENSHOT_ICON,
@@ -34,12 +32,9 @@ public enum AppPropertyTypes {
     DATA_FILE_EXT_DESC,
     TEXT_AREA,
     SPECIFIED_FILE,
-    SEPARATOR,
-    YES,
-    NO,
-    DATA_VILIJ_PATH,
-    HW1,
-    RESOURCES,
-    DISPLAY,
-    TOOLBAR,
+    LEFT_PANE_TITLE,
+    LEFT_PANE_TITLEFONT,
+    LEFT_PANE_TITLESIZE,
+    CHART_TITLE,
+    DISPLAY_BUTTON_TEXT
 }
