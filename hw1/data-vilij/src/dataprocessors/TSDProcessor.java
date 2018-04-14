@@ -49,6 +49,7 @@ public final class TSDProcessor {
 
     private ArrayList<String> labels;
     private AtomicInteger counter;
+    private AtomicInteger nullLabel;
 
     public AtomicInteger getCounter() {
         return counter;
@@ -56,6 +57,10 @@ public final class TSDProcessor {
 
     public ArrayList<String> getLabels() {
         return labels;
+    }
+
+    public AtomicInteger getNullLabel() {
+        return nullLabel;
     }
 
     public TSDProcessor() {
@@ -83,8 +88,8 @@ public final class TSDProcessor {
         StringBuilder errorMessage = new StringBuilder();
         counter = new AtomicInteger(1);
         ArrayList<String> strings = new ArrayList<>();
-
-        labels = new ArrayList<>();
+        labels = new ArrayList<String>();
+        nullLabel = new AtomicInteger(0);
 
         Stream.of(tsdString.split("\n"))
               .map(line -> Arrays.asList(line.split("\t")))
@@ -101,8 +106,12 @@ public final class TSDProcessor {
                               throw new DuplicateDataNameException(name);
                           }
                       }
-                      if(!labels.contains(label))
-                          labels.add(label);
+                      if(!labels.contains(label)) {
+                          if(!label.equals("null"))
+                              labels.add(label);
+                      }
+                      if(label.equals("null"))
+                          nullLabel.getAndIncrement();
                       strings.add(name);
                       counter.getAndIncrement();
                   } catch (InvalidDataNameException e) {

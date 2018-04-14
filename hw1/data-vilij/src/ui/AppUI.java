@@ -8,9 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -47,6 +45,20 @@ public final class AppUI extends UITemplate {
     private Text metaData;
     private Button Clustering;
     private Button Classification;
+    private RadioButton class1;
+    private Button classRun1;
+    private RadioButton class2;
+    private Button classRun2;
+    private RadioButton class3;
+    private Button classRun3;
+    private RadioButton clust1;
+    private Button clustRun1;
+    private RadioButton clust2;
+    private Button clustRun2;
+    private RadioButton clust3;
+    private Button clustRun3;
+    private GridPane algButtons;
+    private ToggleGroup buttons;
 
     public LineChart<Number, Number> getChart() { return chart; }
 
@@ -93,6 +105,25 @@ public final class AppUI extends UITemplate {
 
     public void setMetaData(String metaData) {
         this.metaData.setText(metaData);
+    }
+
+    public void disableAll(){
+        metaData.setVisible(false);
+        textArea.setDisable(false);
+        Classification.setVisible(false);
+        Clustering.setVisible(false);
+        class1.setVisible(false);
+        class2.setVisible(false);
+        class3.setVisible(false);
+        classRun1.setVisible(false);
+        classRun2.setVisible(false);
+        classRun3.setVisible(false);
+        clust1.setVisible(false);
+        clust2.setVisible(false);
+        clust3.setVisible(false);
+        clustRun1.setVisible(false);
+        clustRun2.setVisible(false);
+        clustRun3.setVisible(false);
     }
 
     @Override
@@ -187,6 +218,7 @@ public final class AppUI extends UITemplate {
         Classification = new Button("Classification");
         Classification.setVisible(false);
 
+
         HBox processButtonsBox = new HBox();
         displayButton = new Button(manager.getPropertyValue(AppPropertyTypes.DISPLAY_BUTTON_TEXT.name()));
         HBox.setHgrow(processButtonsBox, Priority.ALWAYS);
@@ -194,9 +226,66 @@ public final class AppUI extends UITemplate {
         metaData = new Text();
         metaData.setVisible(false);
 
+        buttons = new ToggleGroup();
+
+        algButtons = new GridPane();
+        class1 = new RadioButton("Classification 1");
+        class1.setToggleGroup(buttons);
+        class1.setVisible(false);
+        algButtons.add(class1, 0,0);
+
+        classRun1 = new Button("Options");
+        algButtons.add(classRun1, 1, 0);
+        classRun1.setVisible(false);
+
+        class2 = new RadioButton("Classification 2");
+        algButtons.add(class2, 0,1);
+        class2.setToggleGroup(buttons);
+        class2.setVisible(false);
+
+        classRun2 = new Button("Options");
+        algButtons.add(classRun2, 1,1);
+        classRun2.setVisible(false);
+
+        class3 = new RadioButton("Classification 3");
+        algButtons.add(class3, 0,2);
+        class3.setToggleGroup(buttons);
+        class3.setVisible(false);
+
+        classRun3 = new Button("Options");
+        algButtons.add(classRun3, 1,2);
+        classRun3.setVisible(false);
+
+        clust1 = new RadioButton("Clustering 1");
+        algButtons.add(clust1, 0,3);
+        clust1.setToggleGroup(buttons);
+        clust1.setVisible(false);
+
+        clustRun1 = new Button("Options");
+        algButtons.add(clustRun1, 1, 3);
+        clustRun1.setVisible(false);
+
+        clust2 = new RadioButton("Clustering 2");
+        algButtons.add(clust2, 0, 4);
+        clust2.setToggleGroup(buttons);
+        clust2.setVisible(false);
+
+        clustRun2 = new Button("Options");
+        algButtons.add(clustRun2, 1, 4);
+        clustRun2.setVisible(false);
+
+        clust3 = new RadioButton("Clustering 3");
+        algButtons.add(clust3, 0, 5);
+        clust3.setToggleGroup(buttons);
+        clust3.setVisible(false);
+
+        clustRun3 = new Button("Options");
+        algButtons.add(clustRun3, 1, 5);
+        clustRun3.setVisible(false);
 
 
-        leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaData,Clustering,Classification);
+
+        leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaData,Clustering,Classification,algButtons);
 
         StackPane rightPanel = new StackPane(chart);
         rightPanel.setMaxSize(windowWidth * 0.69, windowHeight * 0.69);
@@ -216,7 +305,7 @@ public final class AppUI extends UITemplate {
         VBox.setVgrow(appPane, Priority.ALWAYS);
 
         checkBox = new Button("Done Editing");
-        appPane.getChildren().add(checkBox);
+        leftPanel.getChildren().add(checkBox);
 
         textArea.setVisible(false);
         displayButton.setVisible(false);
@@ -232,7 +321,22 @@ public final class AppUI extends UITemplate {
         setDisplayButtonActions();
         checkBox.setOnAction( event -> {
             if(textArea.isDisabled()){
+                metaData.setVisible(false);
                 textArea.setDisable(false);
+                Classification.setVisible(false);
+                Clustering.setVisible(false);
+                class1.setVisible(false);
+                class2.setVisible(false);
+                class3.setVisible(false);
+                classRun1.setVisible(false);
+                classRun2.setVisible(false);
+                classRun3.setVisible(false);
+                clust1.setVisible(false);
+                clust2.setVisible(false);
+                clust3.setVisible(false);
+                clustRun1.setVisible(false);
+                clustRun2.setVisible(false);
+                clustRun3.setVisible(false);
                 return;
             }
             textArea.setDisable(true);
@@ -248,12 +352,31 @@ public final class AppUI extends UITemplate {
                 scrnshotButton.setDisable(false);
                 this.metaData.setText(((AppData)applicationTemplate.getDataComponent()).getMeta());
                 metaData.setVisible(true);
-                Classification.setVisible(true);
+                if((((AppData) applicationTemplate.getDataComponent()).getNullLabel().get()==2))
+                    Classification.setVisible(true);
                 Clustering.setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
+        });
+        Classification.setOnAction(event -> {
+            class1.setVisible(true);
+            class2.setVisible(true);
+            class3.setVisible(true);
+            classRun1.setVisible(true);
+            classRun2.setVisible(true);
+            classRun3.setVisible(true);
+            Classification.setVisible(false);
+        });
+        Clustering.setOnAction(event -> {
+            clust1.setVisible(true);
+            clust2.setVisible(true);
+            clust3.setVisible(true);
+            clustRun1.setVisible(true);
+            clustRun2.setVisible(true);
+            clustRun3.setVisible(true);
+            Clustering.setVisible(false);
         });
     }
 

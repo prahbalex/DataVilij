@@ -42,6 +42,10 @@ public class AppData implements DataComponent {
         return processor.getLabels();
     }
 
+    public AtomicInteger getNullLabel(){
+        return processor.getNullLabel();
+    }
+
     public String getMeta(){
         return "\t" + ((AppData)applicationTemplate.getDataComponent()).getCounter() + " number of " +
                 "instances \n \t " + ((AppData)applicationTemplate.getDataComponent()).getLabels().size() + " number of" +
@@ -88,7 +92,7 @@ public class AppData implements DataComponent {
         String hide = "";
 
         String [] data2 = dataString.split("\n");
-        for(int i = 0; i< 10; i ++){
+        for(int i = 0; (i< 10 && i < data2.length); i ++){
             show += data2[i] + "\n";
             numLines++;
         }

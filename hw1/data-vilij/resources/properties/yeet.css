@@ -5,6 +5,13 @@
 .chart-horizontal-grid-lines {
     -fx-stroke : transparent
 }
+.chart-vertical-zero-line {
+    -fx-stroke : transparent
+}
+
+.chart-horizontal-zero-line {
+    -fx-stroke : transparent
+}
 
 .axis-tick-mark {
     -fx-stroke-width: 5;

@@ -56,6 +56,7 @@ public final class AppActions implements ActionComponent {
 
     @Override
     public void handleNewRequest() {
+        ((AppUI)applicationTemplate.getUIComponent()).disableAll();
         ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setVisible(true);
         ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setDisable(false);
         ((AppUI) applicationTemplate.getUIComponent()).getChart().setVisible(true);
@@ -98,6 +99,7 @@ public final class AppActions implements ActionComponent {
 
     @Override
     public void handleLoadRequest() {
+        ((AppUI)applicationTemplate.getUIComponent()).disableAll();
         FileChooser fileChooser = new FileChooser();
         File file = fileChooser.showOpenDialog(new Stage());
         if(file == null)
@@ -119,9 +121,11 @@ public final class AppActions implements ActionComponent {
                     .toString() + "\n";
             ((AppUI)applicationTemplate.getUIComponent()).setMetaData(text);
             ((AppUI)applicationTemplate.getUIComponent()).getMetaData().setVisible(true);
-            ((AppUI)applicationTemplate.getUIComponent()).getClassification().setVisible(true);
+            if((((AppData) applicationTemplate.getDataComponent()).getNullLabel().get()==2))
+                ((AppUI) applicationTemplate.getUIComponent()).getClassification().setVisible(true);
             ((AppUI)applicationTemplate.getUIComponent()).getClustering().setVisible(true);
             ((AppUI)applicationTemplate.getUIComponent()).getSave().setDisable(true);
+
         }
     }
 
