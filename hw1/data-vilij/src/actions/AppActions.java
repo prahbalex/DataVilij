@@ -99,6 +99,7 @@ public final class AppActions implements ActionComponent {
 
     @Override
     public void handleLoadRequest() {
+        ((AppUI)applicationTemplate.getUIComponent()).clear();
         ((AppUI)applicationTemplate.getUIComponent()).disableAll();
         FileChooser fileChooser = new FileChooser();
         File file = fileChooser.showOpenDialog(new Stage());

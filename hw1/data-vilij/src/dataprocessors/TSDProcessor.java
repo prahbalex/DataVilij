@@ -197,6 +197,7 @@ public final class TSDProcessor {
     void clear() {
         dataPoints.clear();
         dataLabels.clear();
+
     }
 
     private String checkedname(String name) throws InvalidDataNameException, DuplicateDataNameException {

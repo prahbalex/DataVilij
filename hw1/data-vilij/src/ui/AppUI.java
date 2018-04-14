@@ -6,6 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.*;
@@ -14,11 +15,13 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import settings.AppPropertyTypes;
+import vilij.components.ErrorDialog;
 import vilij.propertymanager.PropertyManager;
 import vilij.templates.ApplicationTemplate;
 import vilij.templates.UITemplate;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import static vilij.settings.PropertyTypes.GUI_RESOURCE_PATH;
 import static vilij.settings.PropertyTypes.ICONS_RESOURCE_PATH;
@@ -59,6 +62,11 @@ public final class AppUI extends UITemplate {
     private Button clustRun3;
     private GridPane algButtons;
     private ToggleGroup buttons;
+    private Button run;
+    private HashMap<String,ClusterConfig> clusterConfigHashMap = new HashMap<>();
+    private HashMap<String,ClassificationConfig> classificationConfigHashMap = new HashMap<>();
+
+
 
     public LineChart<Number, Number> getChart() { return chart; }
 
@@ -124,6 +132,7 @@ public final class AppUI extends UITemplate {
         clustRun1.setVisible(false);
         clustRun2.setVisible(false);
         clustRun3.setVisible(false);
+        run.setVisible(false);
     }
 
     @Override
@@ -189,6 +198,15 @@ public final class AppUI extends UITemplate {
     public void setCurrentText(String s) { textArea.setText(s);}
 
     private void layout() {
+        clusterConfigHashMap.put("clust1", new ClusterConfig());
+        clusterConfigHashMap.put("clust2", new ClusterConfig());
+        clusterConfigHashMap.put("clust3", new ClusterConfig());
+        classificationConfigHashMap.put("class1", new ClassificationConfig());
+        classificationConfigHashMap.put("class2", new ClassificationConfig());
+        classificationConfigHashMap.put("class3", new ClassificationConfig());
+
+
+
 
         appPane.getScene().getStylesheets().add("properties/yeet.css");
         PropertyManager manager = applicationTemplate.manager;
@@ -307,6 +325,11 @@ public final class AppUI extends UITemplate {
         checkBox = new Button("Done Editing");
         leftPanel.getChildren().add(checkBox);
 
+        run = new Button("Run");
+        run.setVisible(false);
+        leftPanel.getChildren().add(run);
+
+
         textArea.setVisible(false);
         displayButton.setVisible(false);
         checkBox.setVisible(false);
@@ -337,6 +360,7 @@ public final class AppUI extends UITemplate {
                 clustRun1.setVisible(false);
                 clustRun2.setVisible(false);
                 clustRun3.setVisible(false);
+                run.setVisible(false);
                 return;
             }
             textArea.setDisable(true);
@@ -368,6 +392,7 @@ public final class AppUI extends UITemplate {
             classRun2.setVisible(true);
             classRun3.setVisible(true);
             Classification.setVisible(false);
+            Clustering.setVisible(false);
         });
         Clustering.setOnAction(event -> {
             clust1.setVisible(true);
@@ -377,6 +402,277 @@ public final class AppUI extends UITemplate {
             clustRun2.setVisible(true);
             clustRun3.setVisible(true);
             Clustering.setVisible(false);
+            Classification.setVisible(false);
+        });
+        class1.setOnAction(event -> {
+            run.setVisible(true);
+        });
+        class2.setOnAction(event -> {
+            run.setVisible(true);
+        });
+        class3.setOnAction(event -> {
+            run.setVisible(true);
+        });
+        clust1.setOnAction(event -> {
+            run.setVisible(true);
+        });
+        clust2.setOnAction(event -> {
+            run.setVisible(true);
+        });
+        clust3.setOnAction(event -> {
+            run.setVisible(true);
+        });
+        classRun1.setOnAction(event -> {
+            Text text = new Text("Max Iteration");
+            Text text1 = new Text("Update Interval");
+            Text text2 = new Text("Continuous Run?");
+            Button save = new Button("Save");
+            ClassificationConfig a = classificationConfigHashMap.get("class1");
+            Stage stage = new Stage();
+            GridPane gridPane = new GridPane();
+            Scene scene = new Scene(gridPane);
+            TextField textField = new TextField();
+            TextField textField1 = new TextField();
+            CheckBox checkBox = new CheckBox();
+            textField.setText(String.valueOf(a.getMaxIntegers()));
+            textField1.setText(String.valueOf(a.getUpdateInterval()));
+            checkBox.setSelected(a.isContinuousRun());
+            gridPane.add(text, 0, 0);
+            gridPane.add(text1, 0, 2);
+            gridPane.add(text2, 0, 4);
+            gridPane.add(save, 0, 5);
+            gridPane.add(textField, 1, 0);
+            gridPane.add(textField1, 1, 2);
+            gridPane.add(checkBox, 1, 4);
+            stage.setScene(scene);
+            stage.show();
+            save.setOnAction(event1 -> {
+                while(true) {
+                    try {
+                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
+                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
+                        a.setContinuousRun(checkBox.isSelected());
+                        stage.close();
+                        break;
+                    }catch (Exception e){
+                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
+                        }
+                        break;
+                }
+            });
+        });
+        classRun2.setOnAction(event -> {
+            Text text = new Text("Max Iteration");
+            Text text1 = new Text("Update Interval");
+            Text text2 = new Text("Continuous Run?");
+            Button save = new Button("Save");
+            ClassificationConfig a = classificationConfigHashMap.get("class2");
+            Stage stage = new Stage();
+            GridPane gridPane = new GridPane();
+            Scene scene = new Scene(gridPane);
+            TextField textField = new TextField();
+            TextField textField1 = new TextField();
+            CheckBox checkBox = new CheckBox();
+            textField.setText(String.valueOf(a.getMaxIntegers()));
+            textField1.setText(String.valueOf(a.getUpdateInterval()));
+            checkBox.setSelected(a.isContinuousRun());
+            gridPane.add(text, 0, 0);
+            gridPane.add(text1, 0, 2);
+            gridPane.add(text2, 0, 4);
+            gridPane.add(save, 0, 5);
+            gridPane.add(textField, 1, 0);
+            gridPane.add(textField1, 1, 2);
+            gridPane.add(checkBox, 1, 4);
+            stage.setScene(scene);
+            stage.show();
+            save.setOnAction(event1 -> {
+                while(true) {
+                    try {
+                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
+                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
+                        a.setContinuousRun(checkBox.isSelected());
+                        stage.close();
+                        break;
+                    }catch (Exception e){
+                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
+                    }
+                    break;
+                }
+            });
+        });
+        classRun3.setOnAction(event -> {
+            Text text = new Text("Max Iteration");
+            Text text1 = new Text("Update Interval");
+            Text text2 = new Text("Continuous Run?");
+            Button save = new Button("Save");
+            ClassificationConfig a = classificationConfigHashMap.get("class3");
+            Stage stage = new Stage();
+            GridPane gridPane = new GridPane();
+            Scene scene = new Scene(gridPane);
+            TextField textField = new TextField();
+            TextField textField1 = new TextField();
+            CheckBox checkBox = new CheckBox();
+            textField.setText(String.valueOf(a.getMaxIntegers()));
+            textField1.setText(String.valueOf(a.getUpdateInterval()));
+            checkBox.setSelected(a.isContinuousRun());
+            gridPane.add(text, 0, 0);
+            gridPane.add(text1, 0, 2);
+            gridPane.add(text2, 0, 4);
+            gridPane.add(save, 0, 5);
+            gridPane.add(textField, 1, 0);
+            gridPane.add(textField1, 1, 2);
+            gridPane.add(checkBox, 1, 4);
+            stage.setScene(scene);
+            stage.show();
+            save.setOnAction(event1 -> {
+                while(true) {
+                    try {
+                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
+                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
+                        a.setContinuousRun(checkBox.isSelected());
+                        stage.close();
+                        break;
+                    }catch (Exception e){
+                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
+                    }
+                    break;
+                }
+            });
+        });
+        clustRun1.setOnAction(event -> {
+            Text text = new Text("Max Iteration");
+            Text text1 = new Text("Update Interval");
+            Text text2 = new Text("Continuous Run?");
+            Text text3 = new Text("Number of Clusters");
+            Button save = new Button("Save");
+            ClusterConfig a = clusterConfigHashMap.get("clust1");
+            Stage stage = new Stage();
+            GridPane gridPane = new GridPane();
+            Scene scene = new Scene(gridPane);
+            TextField textField = new TextField();
+            TextField textField1 = new TextField();
+            TextField textField2 = new TextField();
+            CheckBox checkBox = new CheckBox();
+            textField.setText(String.valueOf(a.getMaxIntegers()));
+            textField1.setText(String.valueOf(a.getUpdateInterval()));
+            textField2.setText(String.valueOf(a.getNumClusters()));
+            checkBox.setSelected(a.isContinuousRun());
+            gridPane.add(text, 0, 0);
+            gridPane.add(text1, 0, 2);
+            gridPane.add(text2, 0, 4);
+            gridPane.add(text3, 0, 6);
+            gridPane.add(save, 0, 8);
+            gridPane.add(textField, 1, 0);
+            gridPane.add(textField1, 1, 2);
+            gridPane.add(textField2, 1, 4);
+            gridPane.add(checkBox, 1, 6);
+            stage.setScene(scene);
+            stage.show();
+            save.setOnAction(event1 -> {
+                while(true) {
+                    try {
+                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
+                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
+                        a.setContinuousRun(checkBox.isSelected());
+                        a.setNumClusters(Integer.parseInt(textField2.getText()));
+                        stage.close();
+                        break;
+                    }catch (Exception e){
+                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
+                    }
+                    break;
+                }
+            });
+        });
+        clustRun2.setOnAction(event -> {
+            Text text = new Text("Max Iteration");
+            Text text1 = new Text("Update Interval");
+            Text text2 = new Text("Continuous Run?");
+            Text text3 = new Text("Number of Clusters");
+            Button save = new Button("Save");
+            ClusterConfig a = clusterConfigHashMap.get("clust2");
+            Stage stage = new Stage();
+            GridPane gridPane = new GridPane();
+            Scene scene = new Scene(gridPane);
+            TextField textField = new TextField();
+            TextField textField1 = new TextField();
+            TextField textField2 = new TextField();
+            CheckBox checkBox = new CheckBox();
+            textField.setText(String.valueOf(a.getMaxIntegers()));
+            textField1.setText(String.valueOf(a.getUpdateInterval()));
+            textField2.setText(String.valueOf(a.getNumClusters()));
+            checkBox.setSelected(a.isContinuousRun());
+            gridPane.add(text, 0, 0);
+            gridPane.add(text1, 0, 2);
+            gridPane.add(text2, 0, 4);
+            gridPane.add(text3, 0, 6);
+            gridPane.add(save, 0, 8);
+            gridPane.add(textField, 1, 0);
+            gridPane.add(textField1, 1, 2);
+            gridPane.add(textField2, 1, 4);
+            gridPane.add(checkBox, 1, 6);
+            stage.setScene(scene);
+            stage.show();
+            save.setOnAction(event1 -> {
+                while(true) {
+                    try {
+                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
+                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
+                        a.setContinuousRun(checkBox.isSelected());
+                        a.setNumClusters(Integer.parseInt(textField2.getText()));
+                        stage.close();
+                        break;
+                    }catch (Exception e){
+                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
+                    }
+                    break;
+                }
+            });
+        });
+        clustRun3.setOnAction(event -> {
+            Text text = new Text("Max Iteration");
+            Text text1 = new Text("Update Interval");
+            Text text2 = new Text("Continuous Run?");
+            Text text3 = new Text("Number of Clusters");
+            Button save = new Button("Save");
+            ClusterConfig a = clusterConfigHashMap.get("clust3");
+            Stage stage = new Stage();
+            GridPane gridPane = new GridPane();
+            Scene scene = new Scene(gridPane);
+            TextField textField = new TextField();
+            TextField textField1 = new TextField();
+            TextField textField2 = new TextField();
+            CheckBox checkBox = new CheckBox();
+            textField.setText(String.valueOf(a.getMaxIntegers()));
+            textField1.setText(String.valueOf(a.getUpdateInterval()));
+            textField2.setText(String.valueOf(a.getNumClusters()));
+            checkBox.setSelected(a.isContinuousRun());
+            gridPane.add(text, 0, 0);
+            gridPane.add(text1, 0, 2);
+            gridPane.add(text2, 0, 4);
+            gridPane.add(text3, 0, 6);
+            gridPane.add(save, 0, 8);
+            gridPane.add(textField, 1, 0);
+            gridPane.add(textField1, 1, 2);
+            gridPane.add(textField2, 1, 4);
+            gridPane.add(checkBox, 1, 6);
+            stage.setScene(scene);
+            stage.show();
+            save.setOnAction(event1 -> {
+                while(true) {
+                    try {
+                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
+                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
+                        a.setContinuousRun(checkBox.isSelected());
+                        a.setNumClusters(Integer.parseInt(textField2.getText()));
+                        stage.close();
+                        break;
+                    }catch (Exception e){
+                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
+                    }
+                    break;
+                }
+            });
         });
     }
 
