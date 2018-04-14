@@ -8,7 +8,11 @@ import xmlutil.InvalidXMLFileFormatException;
 import xmlutil.XMLUtilities;
 
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * This is the core class that defines all the global properties to be used by the Vilij framework.

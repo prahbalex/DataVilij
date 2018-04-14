@@ -8,14 +8,10 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ScatterChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextArea;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -45,14 +41,58 @@ public final class AppUI extends UITemplate {
     private Button                       displayButton;  // workspace button to display data on the chart
     private TextArea                     textArea;       // text area for new data input
     private boolean                      hasNewText;     // whether or not the text area has any new data since last display
-
-    private CheckBox checkBox;
+    private VBox leftPanel;
+    private Text leftPanelTitle;
+    private Button checkBox;
+    private Text metaData;
+    private Button Clustering;
+    private Button Classification;
 
     public LineChart<Number, Number> getChart() { return chart; }
 
     public AppUI(Stage primaryStage, ApplicationTemplate applicationTemplate) {
         super(primaryStage, applicationTemplate);
         this.applicationTemplate = applicationTemplate;
+    }
+
+    public Button getClassification() {
+        return Classification;
+    }
+
+    public Button getSave(){
+        return saveButton;
+    }
+
+    public Button getClustering() {
+        return Clustering;
+    }
+
+    public VBox getleftPanel(){
+        return leftPanel;
+    }
+
+    public TextArea getTextArea() {
+        return textArea;
+    }
+
+    public Text getLeftPanelTitle() {
+        return leftPanelTitle;
+    }
+
+    public Button getDisplayButton() {
+        return displayButton;
+    }
+
+    public Button getCheckBox() {
+        return checkBox;
+    }
+
+    public Text getMetaData() {
+        return metaData;
+    }
+
+    public void setMetaData(String metaData) {
+        this.metaData.setText(metaData);
     }
 
     @Override
@@ -126,7 +166,7 @@ public final class AppUI extends UITemplate {
         chart = new LineChart<>(xAxis, yAxis);
         chart.setTitle(manager.getPropertyValue(AppPropertyTypes.CHART_TITLE.name()));
 
-        VBox leftPanel = new VBox(8);
+        leftPanel = new VBox(8);
         leftPanel.setAlignment(Pos.TOP_CENTER);
         leftPanel.setPadding(new Insets(10));
 
@@ -134,41 +174,86 @@ public final class AppUI extends UITemplate {
         leftPanel.setMaxSize(windowWidth * 0.29, windowHeight * 0.3);
         leftPanel.setMinSize(windowWidth * 0.29, windowHeight * 0.3);
 
-        Text   leftPanelTitle = new Text(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLE.name()));
+        leftPanelTitle = new Text(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLE.name()));
         String fontname       = manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLEFONT.name());
         Double fontsize       = Double.parseDouble(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLESIZE.name()));
         leftPanelTitle.setFont(Font.font(fontname, fontsize));
 
         textArea = new TextArea();
+        textArea.setMinHeight(180);
+
+        Clustering = new Button("Clustering");
+        Clustering.setVisible(false);
+        Classification = new Button("Classification");
+        Classification.setVisible(false);
 
         HBox processButtonsBox = new HBox();
         displayButton = new Button(manager.getPropertyValue(AppPropertyTypes.DISPLAY_BUTTON_TEXT.name()));
         HBox.setHgrow(processButtonsBox, Priority.ALWAYS);
-        processButtonsBox.getChildren().add(displayButton);
 
-        leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox);
+        metaData = new Text();
+        metaData.setVisible(false);
+
+
+
+        leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaData,Clustering,Classification);
 
         StackPane rightPanel = new StackPane(chart);
         rightPanel.setMaxSize(windowWidth * 0.69, windowHeight * 0.69);
         rightPanel.setMinSize(windowWidth * 0.69, windowHeight * 0.69);
         StackPane.setAlignment(rightPanel, Pos.CENTER);
 
-        workspace = new HBox(leftPanel, rightPanel);
+        GridPane gridPane = new GridPane();
+        gridPane.setTranslateX(-450);
+        Text chartTitle = new Text("Plot");
+        gridPane.getChildren().add(chartTitle);
+
+        workspace = new HBox(leftPanel, rightPanel, gridPane);
+
         HBox.setHgrow(workspace, Priority.ALWAYS);
 
         appPane.getChildren().add(workspace);
         VBox.setVgrow(appPane, Priority.ALWAYS);
 
-        checkBox = new CheckBox("Make read only");
+        checkBox = new Button("Done Editing");
         appPane.getChildren().add(checkBox);
+
+        textArea.setVisible(false);
+        displayButton.setVisible(false);
+        checkBox.setVisible(false);
+        chart.setVisible(false);
+        leftPanelTitle.setVisible(false);
+        newButton.setDisable(false);
+
     }
 
     private void setWorkspaceActions() {
         setTextAreaActions();
         setDisplayButtonActions();
-        checkBox.selectedProperty().addListener((observable, oldValue, newValue) ->
-        {
-            textArea.setDisable(newValue);
+        checkBox.setOnAction( event -> {
+            if(textArea.isDisabled()){
+                textArea.setDisable(false);
+                return;
+            }
+            textArea.setDisable(true);
+            try {
+                chart.getData().clear();
+                AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
+                dataComponent.clear();
+                dataComponent.loadData(textArea.getText());
+                if(((AppData) applicationTemplate.getDataComponent()).getError()){
+                    return;
+                }
+                dataComponent.displayData();
+                scrnshotButton.setDisable(false);
+                this.metaData.setText(((AppData)applicationTemplate.getDataComponent()).getMeta());
+                metaData.setVisible(true);
+                Classification.setVisible(true);
+                Clustering.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         });
     }
 

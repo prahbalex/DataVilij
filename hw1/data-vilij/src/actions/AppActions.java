@@ -4,7 +4,6 @@ import dataprocessors.AppData;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -20,6 +19,7 @@ import vilij.settings.PropertyTypes;
 import vilij.templates.ApplicationTemplate;
 
 import javax.imageio.ImageIO;
+import javax.xml.soap.Text;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -56,19 +56,38 @@ public final class AppActions implements ActionComponent {
 
     @Override
     public void handleNewRequest() {
-        try {
-            if (!isUnsaved.get() || promptToSave()) {
-                applicationTemplate.getDataComponent().clear();
-                applicationTemplate.getUIComponent().clear();
-                isUnsaved.set(false);
-                dataFilePath = null;
-            }
-        } catch (IOException e) { errorHandlingHelper(); }
+        ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setVisible(true);
+        ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setDisable(false);
+        ((AppUI) applicationTemplate.getUIComponent()).getChart().setVisible(true);
+        ((AppUI) applicationTemplate.getUIComponent()).getLeftPanelTitle().setVisible(true);
+        ((AppUI)applicationTemplate.getUIComponent()).getDisplayButton().setVisible(true);
+        ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(true);
+        (applicationTemplate.getUIComponent()).clear();
+        ((AppUI)applicationTemplate.getUIComponent()).setMetaData("");
+        ((AppUI)applicationTemplate.getUIComponent()).getClassification().setVisible(false);
+        ((AppUI)applicationTemplate.getUIComponent()).getClustering().setVisible(false);
+        dataFilePath = null;
     }
+
+//    @Override
+//    public void handleNewRequest() {
+//        try {
+//            if (!isUnsaved.get() || promptToSave()) {
+//
+//                applicationTemplate.getDataComponent().clear();
+//                applicationTemplate.getUIComponent().clear();
+//                isUnsaved.set(false);
+//                dataFilePath = null;
+//            }
+//        } catch (IOException e) { errorHandlingHelper(); }
+//    }
 
     @Override
     public void handleSaveRequest() {
         try {
+            ((AppData)applicationTemplate.getDataComponent()).loadData(((AppUI)applicationTemplate.getUIComponent()).getCurrentText());
+            if(((AppData) applicationTemplate.getDataComponent()).getError())
+                return;
             if (!isUnsaved.get() || promptToSave()) {
                 isUnsaved.set(false);
             }}
@@ -86,6 +105,24 @@ public final class AppActions implements ActionComponent {
         Path p = file.toPath();
         dataFilePath = p;
         (applicationTemplate.getDataComponent()).loadData(p);
+        if(!((AppData)applicationTemplate.getDataComponent()).getError()) {
+            ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setVisible(true);
+            ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setDisable(true);
+            ((AppUI) applicationTemplate.getUIComponent()).getChart().setVisible(true);
+            ((AppUI) applicationTemplate.getUIComponent()).getLeftPanelTitle().setVisible(true);
+            ((AppUI)applicationTemplate.getUIComponent()).getDisplayButton().setVisible(true);
+            ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(true);
+            String text = "\t" + ((AppData)applicationTemplate.getDataComponent()).getCounter() + " number of " +
+                    "instances \n \t " + ((AppData)applicationTemplate.getDataComponent()).getLabels().size() + " number of" +
+                    "labels loaded \n\t,  loaded from path \n\t " + p.toString() + "\n\t and labels " +
+                    ((AppData)applicationTemplate.getDataComponent()).getLabels()
+                    .toString() + "\n";
+            ((AppUI)applicationTemplate.getUIComponent()).setMetaData(text);
+            ((AppUI)applicationTemplate.getUIComponent()).getMetaData().setVisible(true);
+            ((AppUI)applicationTemplate.getUIComponent()).getClassification().setVisible(true);
+            ((AppUI)applicationTemplate.getUIComponent()).getClustering().setVisible(true);
+            ((AppUI)applicationTemplate.getUIComponent()).getSave().setDisable(true);
+        }
     }
 
     @Override

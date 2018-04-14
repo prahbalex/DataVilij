@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This is the concrete application-specific implementation of the data component defined by the Vilij framework.
@@ -26,7 +27,28 @@ public class AppData implements DataComponent {
 
     private TSDProcessor        processor;
     private ApplicationTemplate applicationTemplate;
+    private Boolean error;
+    private Path p;
 
+    public Boolean getError() {
+        return error;
+    }
+
+    public AtomicInteger getCounter(){
+        return processor.getCounter();
+    }
+
+    public ArrayList<String> getLabels(){
+        return processor.getLabels();
+    }
+
+    public String getMeta(){
+        return "\t" + ((AppData)applicationTemplate.getDataComponent()).getCounter() + " number of " +
+                "instances \n \t " + ((AppData)applicationTemplate.getDataComponent()).getLabels().size() + " number of" +
+                "labels loaded \n\t,  " + "\n\t and labels " +
+                ((AppData)applicationTemplate.getDataComponent()).getLabels()
+                        .toString() + "\n";
+    }
     public AppData(ApplicationTemplate applicationTemplate) {
         this.processor = new TSDProcessor();
         this.applicationTemplate = applicationTemplate;
@@ -34,6 +56,7 @@ public class AppData implements DataComponent {
 
     @Override
     public void loadData(Path dataFilePath) {
+        p = dataFilePath;
        String dataString = "";
        Scanner scanner;
        try {
@@ -57,6 +80,7 @@ public class AppData implements DataComponent {
             String          errInput = manager.getPropertyValue(AppPropertyTypes.TEXT_AREA.name());
             dialog.show(errTitle, errMsg + errInput + e.getMessage());
             processor.clear();
+            error = true;
             return;
         }
         int numLines = 0;
@@ -78,6 +102,7 @@ public class AppData implements DataComponent {
         }
         ((AppUI)applicationTemplate.getUIComponent()).setCurrentText(show);
         displayData();
+        error = false;
     }
 
     @Override

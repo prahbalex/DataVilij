@@ -5,7 +5,12 @@ import javafx.scene.Cursor;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Tooltip;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -42,6 +47,17 @@ public final class TSDProcessor {
     private Map<String, String>  dataLabels;
     private Map<String, Point2D> dataPoints;
 
+    private ArrayList<String> labels;
+    private AtomicInteger counter;
+
+    public AtomicInteger getCounter() {
+        return counter;
+    }
+
+    public ArrayList<String> getLabels() {
+        return labels;
+    }
+
     public TSDProcessor() {
         dataLabels = new HashMap<>();
         dataPoints = new HashMap<>();
@@ -65,8 +81,11 @@ public final class TSDProcessor {
     public void processString(String tsdString) throws Exception {
         AtomicBoolean hadAnError   = new AtomicBoolean(false);
         StringBuilder errorMessage = new StringBuilder();
-        AtomicInteger counter = new AtomicInteger(1);
+        counter = new AtomicInteger(1);
         ArrayList<String> strings = new ArrayList<>();
+
+        labels = new ArrayList<>();
+
         Stream.of(tsdString.split("\n"))
               .map(line -> Arrays.asList(line.split("\t")))
               .forEach(list -> {
@@ -82,6 +101,8 @@ public final class TSDProcessor {
                               throw new DuplicateDataNameException(name);
                           }
                       }
+                      if(!labels.contains(label))
+                          labels.add(label);
                       strings.add(name);
                       counter.getAndIncrement();
                   } catch (InvalidDataNameException e) {
@@ -95,8 +116,10 @@ public final class TSDProcessor {
                       hadAnError.set(true);
                   }
               });
-        if (errorMessage.length() > 0)
+        if (errorMessage.length() > 0) {
             throw new Exception(errorMessage.toString());
+
+        }
     }
 
     /**

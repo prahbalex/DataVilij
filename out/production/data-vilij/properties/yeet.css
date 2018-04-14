@@ -1,0 +1,35 @@
+.chart-vertical-grid-lines {
+    -fx-stroke : transparent
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke : transparent
+}
+
+.axis-tick-mark {
+    -fx-stroke-width: 5;
+}
+
+.axis-minor-tick-mark {
+    -fx-stroke-width: 1;
+}
+
+.chart-plot-background {
+    -fx-border-color : blue;
+    -fx-border-width : 5px
+}
+
+#css1 {
+    -fx-stroke: transparent
+}
+
+#css2 {
+    -fx-fill: transparent;
+    -fx-stroke: transparent;
+    -fx-background-color: transparent
+}
+
+#css3 {
+    -fx-tick-length: 20;
+    -fx-minor-tick-length: 10
+}
