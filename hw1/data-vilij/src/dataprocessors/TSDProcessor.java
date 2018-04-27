@@ -44,8 +44,22 @@ public final class TSDProcessor {
         }
     }
 
+    private XYChart.Series<Number, Number> averageLine;
+
+    public XYChart.Series<Number, Number> getAverageLine() {
+        return averageLine;
+    }
+
+    public void setAverageLine(XYChart.Series<Number, Number> averageLine) {
+        this.averageLine = averageLine;
+    }
+
     private Map<String, String>  dataLabels;
     private Map<String, Point2D> dataPoints;
+
+    public Map<String, Point2D>  getDataPoints(){
+        return dataPoints;
+    }
 
     private ArrayList<String> labels;
     private AtomicInteger counter;
@@ -154,7 +168,7 @@ public final class TSDProcessor {
 
         double average = (sumOfY)/data.size();
 
-        XYChart.Series<Number, Number> averageLine = new XYChart.Series<>();
+        averageLine = new XYChart.Series<>();
 
         averageLine.getData().add(new XYChart.Data<>(minimum, average));
         averageLine.getData().add(new XYChart.Data<>(maximum, average));
@@ -197,7 +211,6 @@ public final class TSDProcessor {
     void clear() {
         dataPoints.clear();
         dataLabels.clear();
-
     }
 
     private String checkedname(String name) throws InvalidDataNameException, DuplicateDataNameException {

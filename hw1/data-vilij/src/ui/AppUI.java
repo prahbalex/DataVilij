@@ -1,7 +1,10 @@
 package ui;
 
 import actions.AppActions;
+import dataprocessors.Algorithm;
 import dataprocessors.AppData;
+import dataprocessors.Classifier;
+import dataprocessors.RandomClassifier;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -22,6 +25,8 @@ import vilij.templates.UITemplate;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static vilij.settings.PropertyTypes.GUI_RESOURCE_PATH;
 import static vilij.settings.PropertyTypes.ICONS_RESOURCE_PATH;
@@ -63,6 +68,10 @@ public final class AppUI extends UITemplate {
     private GridPane algButtons;
     private ToggleGroup buttons;
     private Button run;
+    private Algorithm algorithm;
+    private Thread thread;
+    private boolean classOrCluster; /// true == class
+    private String key;
     private HashMap<String,ClusterConfig> clusterConfigHashMap = new HashMap<>();
     private HashMap<String,ClassificationConfig> classificationConfigHashMap = new HashMap<>();
 
@@ -73,6 +82,10 @@ public final class AppUI extends UITemplate {
     public AppUI(Stage primaryStage, ApplicationTemplate applicationTemplate) {
         super(primaryStage, applicationTemplate);
         this.applicationTemplate = applicationTemplate;
+    }
+
+    public Thread getThread() {
+        return thread;
     }
 
     public Button getClassification() {
@@ -205,8 +218,8 @@ public final class AppUI extends UITemplate {
         classificationConfigHashMap.put("class2", new ClassificationConfig());
         classificationConfigHashMap.put("class3", new ClassificationConfig());
 
-
-
+        thread = new Thread();
+        algorithm = new RandomClassifier();
 
         appPane.getScene().getStylesheets().add("properties/yeet.css");
         PropertyManager manager = applicationTemplate.manager;
@@ -231,6 +244,7 @@ public final class AppUI extends UITemplate {
         textArea = new TextArea();
         textArea.setMinHeight(180);
 
+
         Clustering = new Button("Clustering");
         Clustering.setVisible(false);
         Classification = new Button("Classification");
@@ -247,7 +261,7 @@ public final class AppUI extends UITemplate {
         buttons = new ToggleGroup();
 
         algButtons = new GridPane();
-        class1 = new RadioButton("Classification 1");
+        class1 = new RadioButton("Random Classifier");
         class1.setToggleGroup(buttons);
         class1.setVisible(false);
         algButtons.add(class1, 0,0);
@@ -405,22 +419,52 @@ public final class AppUI extends UITemplate {
             Classification.setVisible(false);
         });
         class1.setOnAction(event -> {
-            run.setVisible(true);
+            if(classificationConfigHashMap.get("class1").isConfigSet())
+                run.setVisible(true);
+            else
+                run.setVisible(false);
+            classOrCluster = true;
+            key = "class1";
         });
         class2.setOnAction(event -> {
-            run.setVisible(true);
+            if(classificationConfigHashMap.get("class2").isConfigSet())
+                run.setVisible(true);
+            else
+                run.setVisible(false);
+            classOrCluster = true;
+            key = "class2";
         });
         class3.setOnAction(event -> {
-            run.setVisible(true);
+            if(classificationConfigHashMap.get("class3").isConfigSet())
+                run.setVisible(true);
+            else
+                run.setVisible(false);
+            classOrCluster = true;
+            key = "class3";
         });
         clust1.setOnAction(event -> {
-            run.setVisible(true);
+            if(clusterConfigHashMap.get("clust1").isConfigSet())
+                run.setVisible(true);
+            else
+                run.setVisible(false);
+            classOrCluster = false;
+            key = "clust1";
         });
         clust2.setOnAction(event -> {
-            run.setVisible(true);
+            if(clusterConfigHashMap.get("clust2").isConfigSet())
+                run.setVisible(true);
+            else
+                run.setVisible(false);
+            classOrCluster = false;
+            key = "clust2";
         });
         clust3.setOnAction(event -> {
-            run.setVisible(true);
+            if(clusterConfigHashMap.get("clust3").isConfigSet())
+                run.setVisible(true);
+            else
+                run.setVisible(false);
+            classOrCluster = false;
+            key = "clust3";
         });
         classRun1.setOnAction(event -> {
             Text text = new Text("Max Iteration");
@@ -452,11 +496,17 @@ public final class AppUI extends UITemplate {
                         a.setMaxIntegers(Integer.parseInt(textField.getText()));
                         a.setUpdateInterval(Integer.parseInt(textField1.getText()));
                         a.setContinuousRun(checkBox.isSelected());
+                        a.setConfigSet(true);
+                        if(buttons.getSelectedToggle().equals(class1))
+                            run.setVisible(true);
+                        else
+                            run.setVisible(false);
                         stage.close();
                         break;
                     }catch (Exception e){
                         ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
                         }
+                        stage.close();
                         break;
                 }
             });
@@ -491,11 +541,17 @@ public final class AppUI extends UITemplate {
                         a.setMaxIntegers(Integer.parseInt(textField.getText()));
                         a.setUpdateInterval(Integer.parseInt(textField1.getText()));
                         a.setContinuousRun(checkBox.isSelected());
+                        a.setConfigSet(true);
+                        if(buttons.getSelectedToggle().equals(class2))
+                            run.setVisible(true);
+                        else
+                            run.setVisible(false);
                         stage.close();
                         break;
                     }catch (Exception e){
                         ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
                     }
+                    stage.close();
                     break;
                 }
             });
@@ -530,11 +586,17 @@ public final class AppUI extends UITemplate {
                         a.setMaxIntegers(Integer.parseInt(textField.getText()));
                         a.setUpdateInterval(Integer.parseInt(textField1.getText()));
                         a.setContinuousRun(checkBox.isSelected());
+                        a.setConfigSet(true);
+                        if(buttons.getSelectedToggle().equals(class3))
+                            run.setVisible(true);
+                        else
+                            run.setVisible(false);
                         stage.close();
                         break;
                     }catch (Exception e){
                         ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
                     }
+                    stage.close();
                     break;
                 }
             });
@@ -575,11 +637,16 @@ public final class AppUI extends UITemplate {
                         a.setUpdateInterval(Integer.parseInt(textField1.getText()));
                         a.setContinuousRun(checkBox.isSelected());
                         a.setNumClusters(Integer.parseInt(textField2.getText()));
+                        if(buttons.getSelectedToggle().equals(clust1))
+                            run.setVisible(true);
+                        else
+                            run.setVisible(false);
                         stage.close();
                         break;
                     }catch (Exception e){
                         ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
                     }
+                    stage.close();
                     break;
                 }
             });
@@ -620,11 +687,16 @@ public final class AppUI extends UITemplate {
                         a.setUpdateInterval(Integer.parseInt(textField1.getText()));
                         a.setContinuousRun(checkBox.isSelected());
                         a.setNumClusters(Integer.parseInt(textField2.getText()));
+                        if(buttons.getSelectedToggle().equals(clust2))
+                            run.setVisible(true);
+                        else
+                            run.setVisible(false);
                         stage.close();
                         break;
                     }catch (Exception e){
                         ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
                     }
+                    stage.close();
                     break;
                 }
             });
@@ -665,15 +737,48 @@ public final class AppUI extends UITemplate {
                         a.setUpdateInterval(Integer.parseInt(textField1.getText()));
                         a.setContinuousRun(checkBox.isSelected());
                         a.setNumClusters(Integer.parseInt(textField2.getText()));
+                        if(buttons.getSelectedToggle().equals(clust3))
+                            run.setVisible(true);
+                        else
+                            run.setVisible(false);
                         stage.close();
                         break;
                     }catch (Exception e){
                         ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
                     }
+                    stage.close();
                     break;
                 }
             });
         });
+        run.setOnAction(event -> {
+            try {
+                if (classOrCluster) {
+                    if (key.equals("class1")) {
+                        ClassificationConfig c = classificationConfigHashMap.get(key);
+                        if (c.getUpdateInterval() <= 0)
+                            throw new Exception();
+                        if (c.getUpdateInterval() <= 0)
+                            throw new Exception();
+                        chart.getData().clear();
+                        AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
+                        dataComponent.clear();
+                        dataComponent.loadData(textArea.getText());
+                        algorithm.setMaxIterations(c.getMaxIntegers());
+                        algorithm.setApplicationTemplate(applicationTemplate);
+                        algorithm.setUpdateInterval(c.getUpdateInterval());
+                        algorithm.setTocontinue(c.isContinuousRun());
+                        thread = new Thread(algorithm);
+                        thread.start();
+                        System.out.println(thread.getState());
+                    }
+                }
+            }catch (Exception e){
+                ErrorDialog.getDialog().show("Error", "Config invalid");
+            }
+        });
+
+
     }
 
     private void setTextAreaActions() {
@@ -703,10 +808,9 @@ public final class AppUI extends UITemplate {
             if (hasNewText) {
                 try {
                     chart.getData().clear();
-                    AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
+                    AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
                     dataComponent.clear();
                     dataComponent.loadData(textArea.getText());
-                    dataComponent.displayData();
                     scrnshotButton.setDisable(false);
                 } catch (Exception e) {
                     e.printStackTrace();

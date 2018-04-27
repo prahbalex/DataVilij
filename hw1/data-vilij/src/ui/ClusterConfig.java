@@ -1,10 +1,19 @@
 package ui;
 
-public class ClusterConfig {
+public class ClusterConfig implements Config{
     private int maxIntegers = 0;
     private int updateInterval = 0;
     private boolean continuousRun = false;
     private int numClusters = 0;
+    private boolean configSet = false;
+
+    public boolean isConfigSet() {
+        return configSet;
+    }
+
+    public void setConfigSet(boolean configSet) {
+        this.configSet = configSet;
+    }
 
     public int getNumClusters() {
         return numClusters;
@@ -19,7 +28,7 @@ public class ClusterConfig {
         this.updateInterval = updateInterval;
         this.continuousRun = continuousRun;
         this.numClusters = numClusters;
-
+        this.configSet = false;
     }
 
     public ClusterConfig(){

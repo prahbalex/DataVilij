@@ -46,6 +46,10 @@ public class AppData implements DataComponent {
         return processor.getNullLabel();
     }
 
+    public TSDProcessor getProcessor() {
+        return processor;
+    }
+
     public String getMeta(){
         return "\t" + ((AppData)applicationTemplate.getDataComponent()).getCounter() + " number of " +
                 "instances \n \t " + ((AppData)applicationTemplate.getDataComponent()).getLabels().size() + " number of" +
