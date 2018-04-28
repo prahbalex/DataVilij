@@ -65,23 +65,12 @@ public final class AppActions implements ActionComponent {
         ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(true);
         (applicationTemplate.getUIComponent()).clear();
         ((AppUI)applicationTemplate.getUIComponent()).setMetaData("");
+        ((AppUI) applicationTemplate.getUIComponent()).getScrnshotButton().setDisable(true);
         ((AppUI)applicationTemplate.getUIComponent()).getClassification().setVisible(false);
         ((AppUI)applicationTemplate.getUIComponent()).getClustering().setVisible(false);
         dataFilePath = null;
     }
 
-//    @Override
-//    public void handleNewRequest() {
-//        try {
-//            if (!isUnsaved.get() || promptToSave()) {
-//
-//                applicationTemplate.getDataComponent().clear();
-//                applicationTemplate.getUIComponent().clear();
-//                isUnsaved.set(false);
-//                dataFilePath = null;
-//            }
-//        } catch (IOException e) { errorHandlingHelper(); }
-//    }
 
     @Override
     public void handleSaveRequest() {
@@ -115,6 +104,7 @@ public final class AppActions implements ActionComponent {
             ((AppUI) applicationTemplate.getUIComponent()).getLeftPanelTitle().setVisible(true);
             ((AppUI)applicationTemplate.getUIComponent()).getDisplayButton().setVisible(true);
             ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(true);
+            ((AppUI) applicationTemplate.getUIComponent()).getScrnshotButton().setDisable(false);
             String text = "\t" + ((AppData)applicationTemplate.getDataComponent()).getCounter() + " number of " +
                     "instances \n \t " + ((AppData)applicationTemplate.getDataComponent()).getLabels().size() + " number of" +
                     "labels loaded \n\t,  loaded from path \n\t " + p.toString() + "\n\t and labels " +

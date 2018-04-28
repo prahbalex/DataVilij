@@ -76,8 +76,16 @@ public final class AppUI extends UITemplate {
     private HashMap<String,ClusterConfig> clusterConfigHashMap = new HashMap<>();
     private HashMap<String,ClassificationConfig> classificationConfigHashMap = new HashMap<>();
 
-    public void setNextButton(boolean b){
-        nextButton.setVisible(b);
+    public Button getNextButton(){
+        return nextButton;
+    }
+
+    public Button getRun() {
+        return run;
+    }
+
+    public Button getScrnshotButton() {
+        return scrnshotButton;
     }
 
     public LineChart<Number, Number> getChart() { return chart; }
@@ -149,6 +157,7 @@ public final class AppUI extends UITemplate {
         clustRun2.setVisible(false);
         clustRun3.setVisible(false);
         run.setVisible(false);
+        nextButton.setVisible(false);
     }
 
     @Override
@@ -765,6 +774,7 @@ public final class AppUI extends UITemplate {
                             throw new Exception();
                         if (c.getUpdateInterval() <= 0)
                             throw new Exception();
+                        nextButton.setVisible(false);
                         chart.getData().clear();
                         ((AppData) applicationTemplate.getDataComponent()).clear();
                         ((AppData) applicationTemplate.getDataComponent()).loadData(textArea.getText());
@@ -782,7 +792,16 @@ public final class AppUI extends UITemplate {
                 ErrorDialog.getDialog().show("Error", "Config invalid");
             }
         });
-
+        nextButton.setOnAction(event -> {
+            synchronized (((AppUI) applicationTemplate.getUIComponent()).getThread()) {
+                try {
+                    thread.notify();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
 
     }
 
