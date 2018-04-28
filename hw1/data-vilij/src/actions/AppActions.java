@@ -126,7 +126,7 @@ public final class AppActions implements ActionComponent {
                 ((AppUI) applicationTemplate.getUIComponent()).getClassification().setVisible(true);
             ((AppUI)applicationTemplate.getUIComponent()).getClustering().setVisible(true);
             ((AppUI)applicationTemplate.getUIComponent()).getSave().setDisable(true);
-
+            ((AppData) applicationTemplate.getDataComponent()).displayData();
         }
     }
 

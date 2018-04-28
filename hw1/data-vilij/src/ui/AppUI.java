@@ -72,10 +72,13 @@ public final class AppUI extends UITemplate {
     private Thread thread;
     private boolean classOrCluster; /// true == class
     private String key;
+    private Button nextButton;
     private HashMap<String,ClusterConfig> clusterConfigHashMap = new HashMap<>();
     private HashMap<String,ClassificationConfig> classificationConfigHashMap = new HashMap<>();
 
-
+    public void setNextButton(boolean b){
+        nextButton.setVisible(b);
+    }
 
     public LineChart<Number, Number> getChart() { return chart; }
 
@@ -315,8 +318,6 @@ public final class AppUI extends UITemplate {
         algButtons.add(clustRun3, 1, 5);
         clustRun3.setVisible(false);
 
-
-
         leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaData,Clustering,Classification,algButtons);
 
         StackPane rightPanel = new StackPane(chart);
@@ -343,6 +344,9 @@ public final class AppUI extends UITemplate {
         run.setVisible(false);
         leftPanel.getChildren().add(run);
 
+        nextButton = new Button("Next");
+        nextButton.setVisible(false);
+        leftPanel.getChildren().add(nextButton);
 
         textArea.setVisible(false);
         displayButton.setVisible(false);
@@ -375,6 +379,7 @@ public final class AppUI extends UITemplate {
                 clustRun2.setVisible(false);
                 clustRun3.setVisible(false);
                 run.setVisible(false);
+                nextButton.setVisible(false);
                 return;
             }
             textArea.setDisable(true);
@@ -761,9 +766,9 @@ public final class AppUI extends UITemplate {
                         if (c.getUpdateInterval() <= 0)
                             throw new Exception();
                         chart.getData().clear();
-                        AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
-                        dataComponent.clear();
-                        dataComponent.loadData(textArea.getText());
+                        ((AppData) applicationTemplate.getDataComponent()).clear();
+                        ((AppData) applicationTemplate.getDataComponent()).loadData(textArea.getText());
+                        ((AppData) applicationTemplate.getDataComponent()).displayData();
                         algorithm.setMaxIterations(c.getMaxIntegers());
                         algorithm.setApplicationTemplate(applicationTemplate);
                         algorithm.setUpdateInterval(c.getUpdateInterval());
@@ -808,9 +813,8 @@ public final class AppUI extends UITemplate {
             if (hasNewText) {
                 try {
                     chart.getData().clear();
-                    AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
-                    dataComponent.clear();
-                    dataComponent.loadData(textArea.getText());
+                    ((AppData) applicationTemplate.getDataComponent()).clear();
+                    ((AppData) applicationTemplate.getDataComponent()).loadData(textArea.getText());
                     scrnshotButton.setDisable(false);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -819,4 +823,5 @@ public final class AppUI extends UITemplate {
             }
         });
     }
+
 }

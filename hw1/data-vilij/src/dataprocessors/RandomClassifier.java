@@ -94,7 +94,14 @@ public class RandomClassifier extends Classifier {
                 System.out.printf("Iteration number %d: ", i); //
                 flush();
                 Platform.runLater(() ->addNewLine(xCoefficient,yCoefficient,constant));
+                try {
+                    Thread.sleep(1000);
+                }
+                catch (Exception ex){
+
+                }
                 if(!tocontinue()){
+                    ((AppUI)applicationTemplate.getUIComponent()).setNextButton(true);
                     synchronized (((AppUI) applicationTemplate.getUIComponent()).getThread()) {
                         try {
                             ((AppUI) applicationTemplate.getUIComponent()).getThread().wait();
@@ -154,6 +161,7 @@ public class RandomClassifier extends Classifier {
         random.getData().add(new XYChart.Data<>(minimumx, firstY));
         random.getData().add(new XYChart.Data<>(maximumx, secondY));
         random.setName("Random Line");
+
 
         ((AppUI)applicationTemplate.getUIComponent()).getChart().getData().add(random);
         (((AppData) applicationTemplate.getDataComponent()).getProcessor()).setAverageLine(random);

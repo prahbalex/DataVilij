@@ -109,7 +109,7 @@ public class AppData implements DataComponent {
             errorDialog.show("Error", "Loaded data consists of " + numLines + " . Showing first 10");
         }
         ((AppUI)applicationTemplate.getUIComponent()).setCurrentText(show);
-        displayData();
+//        displayData();
         error = false;
     }
 
