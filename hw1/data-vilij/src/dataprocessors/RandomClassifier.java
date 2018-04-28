@@ -82,7 +82,9 @@ public class RandomClassifier extends Classifier {
     public void run() {
         for (int i = 1; i <= maxIterations; i++) {
             ((AppUI)applicationTemplate.getUIComponent()).getScrnshotButton().setDisable(true);
-            ((AppUI)applicationTemplate.getUIComponent()).getRun().setDisable(true);
+            ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(false);
+            if(tocontinue())
+                ((AppUI)applicationTemplate.getUIComponent()).getRun().setDisable(true);
             int xCoefficient =  new Long(-1 * Math.round((2 * RAND.nextDouble() - 1) * 10)).intValue();
             int yCoefficient = 10;
             int constant     = RAND.nextInt(11);
@@ -122,6 +124,7 @@ public class RandomClassifier extends Classifier {
         }
         ((AppUI)applicationTemplate.getUIComponent()).getScrnshotButton().setDisable(false);
         ((AppUI)applicationTemplate.getUIComponent()).getRun().setDisable(false);
+        ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(true);
     }
 
     // for internal viewing only

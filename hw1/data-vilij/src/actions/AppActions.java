@@ -117,11 +117,23 @@ public final class AppActions implements ActionComponent {
             ((AppUI)applicationTemplate.getUIComponent()).getClustering().setVisible(true);
             ((AppUI)applicationTemplate.getUIComponent()).getSave().setDisable(true);
             ((AppData) applicationTemplate.getDataComponent()).displayData();
+            setIsUnsavedProperty(false);
         }
     }
 
     @Override
     public void handleExitRequest() {
+        Thread t = ((AppUI)applicationTemplate.getUIComponent()).getThread();
+        ConfirmationDialog confirmationDialog = ConfirmationDialog.getDialog();
+        if(t.isAlive()) {
+            confirmationDialog.show("Error", "Terminate algorithm while running?");
+            if(confirmationDialog.getSelectedOption() == null)
+                return;
+            if(confirmationDialog.getSelectedOption().equals(ConfirmationDialog.Option.NO))
+                return;
+            if(confirmationDialog.getSelectedOption().equals(ConfirmationDialog.Option.CANCEL))
+                return;
+        }
         try {
             if (!isUnsaved.get() || promptToSave())
                 System.exit(0);

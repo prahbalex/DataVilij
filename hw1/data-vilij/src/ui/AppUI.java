@@ -513,8 +513,6 @@ public final class AppUI extends UITemplate {
                         a.setConfigSet(true);
                         if(buttons.getSelectedToggle().equals(class1))
                             run.setVisible(true);
-                        else
-                            run.setVisible(false);
                         stage.close();
                         break;
                     }catch (Exception e){
@@ -558,8 +556,6 @@ public final class AppUI extends UITemplate {
                         a.setConfigSet(true);
                         if(buttons.getSelectedToggle().equals(class2))
                             run.setVisible(true);
-                        else
-                            run.setVisible(false);
                         stage.close();
                         break;
                     }catch (Exception e){
@@ -603,8 +599,6 @@ public final class AppUI extends UITemplate {
                         a.setConfigSet(true);
                         if(buttons.getSelectedToggle().equals(class3))
                             run.setVisible(true);
-                        else
-                            run.setVisible(false);
                         stage.close();
                         break;
                     }catch (Exception e){
