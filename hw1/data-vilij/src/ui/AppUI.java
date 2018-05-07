@@ -1,10 +1,10 @@
 package ui;
 
+import Algorithms.DataSet;
 import actions.AppActions;
-import dataprocessors.Algorithm;
+import Algorithms.Algorithm;
 import dataprocessors.AppData;
-import dataprocessors.Classifier;
-import dataprocessors.RandomClassifier;
+import Algorithms.classification.RandomClassifier;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -23,10 +23,10 @@ import vilij.propertymanager.PropertyManager;
 import vilij.templates.ApplicationTemplate;
 import vilij.templates.UITemplate;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.net.URL;
+import java.util.*;
 
 import static vilij.settings.PropertyTypes.GUI_RESOURCE_PATH;
 import static vilij.settings.PropertyTypes.ICONS_RESOURCE_PATH;
@@ -50,31 +50,28 @@ public final class AppUI extends UITemplate {
     private VBox leftPanel;
     private Text leftPanelTitle;
     private Button checkBox;
-    private Text metaData;
+    private Label metaData;
     private Button Clustering;
     private Button Classification;
-    private RadioButton class1;
-    private Button classRun1;
-    private RadioButton class2;
-    private Button classRun2;
-    private RadioButton class3;
-    private Button classRun3;
-    private RadioButton clust1;
-    private Button clustRun1;
-    private RadioButton clust2;
-    private Button clustRun2;
-    private RadioButton clust3;
-    private Button clustRun3;
     private GridPane algButtons;
     private ToggleGroup buttons;
     private Button run;
     private Algorithm algorithm;
+    private ArrayList<Algorithm> algorithms;
     private Thread thread;
     private boolean classOrCluster; /// true == class
     private String key;
     private Button nextButton;
     private HashMap<String,ClusterConfig> clusterConfigHashMap = new HashMap<>();
     private HashMap<String,ClassificationConfig> classificationConfigHashMap = new HashMap<>();
+
+    public ToggleGroup getButtons() {
+        return buttons;
+    }
+
+    public GridPane getAlgButtons() {
+        return algButtons;
+    }
 
     public Button getNextButton(){
         return nextButton;
@@ -131,7 +128,7 @@ public final class AppUI extends UITemplate {
         return checkBox;
     }
 
-    public Text getMetaData() {
+    public Label getMetaData() {
         return metaData;
     }
 
@@ -144,18 +141,7 @@ public final class AppUI extends UITemplate {
         textArea.setDisable(false);
         Classification.setVisible(false);
         Clustering.setVisible(false);
-        class1.setVisible(false);
-        class2.setVisible(false);
-        class3.setVisible(false);
-        classRun1.setVisible(false);
-        classRun2.setVisible(false);
-        classRun3.setVisible(false);
-        clust1.setVisible(false);
-        clust2.setVisible(false);
-        clust3.setVisible(false);
-        clustRun1.setVisible(false);
-        clustRun2.setVisible(false);
-        clustRun3.setVisible(false);
+        algButtons.getChildren().clear();
         run.setVisible(false);
         nextButton.setVisible(false);
     }
@@ -223,20 +209,15 @@ public final class AppUI extends UITemplate {
     public void setCurrentText(String s) { textArea.setText(s);}
 
     private void layout() {
-        clusterConfigHashMap.put("clust1", new ClusterConfig());
-        clusterConfigHashMap.put("clust2", new ClusterConfig());
-        clusterConfigHashMap.put("clust3", new ClusterConfig());
-        classificationConfigHashMap.put("class1", new ClassificationConfig());
-        classificationConfigHashMap.put("class2", new ClassificationConfig());
-        classificationConfigHashMap.put("class3", new ClassificationConfig());
 
         thread = new Thread();
-        algorithm = new RandomClassifier();
 
         appPane.getScene().getStylesheets().add("properties/yeet.css");
         PropertyManager manager = applicationTemplate.manager;
         NumberAxis      xAxis   = new NumberAxis();
         NumberAxis      yAxis   = new NumberAxis();
+        xAxis.setForceZeroInRange(false);
+        yAxis.setForceZeroInRange(false);
         chart = new LineChart<>(xAxis, yAxis);
         chart.setTitle(manager.getPropertyValue(AppPropertyTypes.CHART_TITLE.name()));
 
@@ -267,65 +248,15 @@ public final class AppUI extends UITemplate {
         displayButton = new Button(manager.getPropertyValue(AppPropertyTypes.DISPLAY_BUTTON_TEXT.name()));
         HBox.setHgrow(processButtonsBox, Priority.ALWAYS);
 
-        metaData = new Text();
+        metaData = new Label();
+        metaData.setMinHeight(150);
+        metaData.setPrefWidth(300);
+        metaData.setWrapText(true);
         metaData.setVisible(false);
 
         buttons = new ToggleGroup();
 
         algButtons = new GridPane();
-        class1 = new RadioButton("Random Classifier");
-        class1.setToggleGroup(buttons);
-        class1.setVisible(false);
-        algButtons.add(class1, 0,0);
-
-        classRun1 = new Button("Options");
-        algButtons.add(classRun1, 1, 0);
-        classRun1.setVisible(false);
-
-        class2 = new RadioButton("Classification 2");
-        algButtons.add(class2, 0,1);
-        class2.setToggleGroup(buttons);
-        class2.setVisible(false);
-
-        classRun2 = new Button("Options");
-        algButtons.add(classRun2, 1,1);
-        classRun2.setVisible(false);
-
-        class3 = new RadioButton("Classification 3");
-        algButtons.add(class3, 0,2);
-        class3.setToggleGroup(buttons);
-        class3.setVisible(false);
-
-        classRun3 = new Button("Options");
-        algButtons.add(classRun3, 1,2);
-        classRun3.setVisible(false);
-
-        clust1 = new RadioButton("Clustering 1");
-        algButtons.add(clust1, 0,3);
-        clust1.setToggleGroup(buttons);
-        clust1.setVisible(false);
-
-        clustRun1 = new Button("Options");
-        algButtons.add(clustRun1, 1, 3);
-        clustRun1.setVisible(false);
-
-        clust2 = new RadioButton("Clustering 2");
-        algButtons.add(clust2, 0, 4);
-        clust2.setToggleGroup(buttons);
-        clust2.setVisible(false);
-
-        clustRun2 = new Button("Options");
-        algButtons.add(clustRun2, 1, 4);
-        clustRun2.setVisible(false);
-
-        clust3 = new RadioButton("Clustering 3");
-        algButtons.add(clust3, 0, 5);
-        clust3.setToggleGroup(buttons);
-        clust3.setVisible(false);
-
-        clustRun3 = new Button("Options");
-        algButtons.add(clustRun3, 1, 5);
-        clustRun3.setVisible(false);
 
         leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaData,Clustering,Classification,algButtons);
 
@@ -375,18 +306,7 @@ public final class AppUI extends UITemplate {
                 textArea.setDisable(false);
                 Classification.setVisible(false);
                 Clustering.setVisible(false);
-                class1.setVisible(false);
-                class2.setVisible(false);
-                class3.setVisible(false);
-                classRun1.setVisible(false);
-                classRun2.setVisible(false);
-                classRun3.setVisible(false);
-                clust1.setVisible(false);
-                clust2.setVisible(false);
-                clust3.setVisible(false);
-                clustRun1.setVisible(false);
-                clustRun2.setVisible(false);
-                clustRun3.setVisible(false);
+                disableAll();
                 run.setVisible(false);
                 nextButton.setVisible(false);
                 return;
@@ -404,386 +324,268 @@ public final class AppUI extends UITemplate {
                 scrnshotButton.setDisable(false);
                 this.metaData.setText(((AppData)applicationTemplate.getDataComponent()).getMeta());
                 metaData.setVisible(true);
-                if((((AppData) applicationTemplate.getDataComponent()).getNullLabel().get()==2))
+                if((((AppData) applicationTemplate.getDataComponent()).getLabels().size()==2))
                     Classification.setVisible(true);
                 Clustering.setVisible(true);
             } catch (Exception e) {
-                e.printStackTrace();
             }
 
         });
         Classification.setOnAction(event -> {
-            class1.setVisible(true);
-            class2.setVisible(true);
-            class3.setVisible(true);
-            classRun1.setVisible(true);
-            classRun2.setVisible(true);
-            classRun3.setVisible(true);
-            Classification.setVisible(false);
-            Clustering.setVisible(false);
-        });
-        Clustering.setOnAction(event -> {
-            clust1.setVisible(true);
-            clust2.setVisible(true);
-            clust3.setVisible(true);
-            clustRun1.setVisible(true);
-            clustRun2.setVisible(true);
-            clustRun3.setVisible(true);
-            Clustering.setVisible(false);
-            Classification.setVisible(false);
-        });
-        class1.setOnAction(event -> {
-            if(classificationConfigHashMap.get("class1").isConfigSet())
-                run.setVisible(true);
-            else
-                run.setVisible(false);
-            classOrCluster = true;
-            key = "class1";
-        });
-        class2.setOnAction(event -> {
-            if(classificationConfigHashMap.get("class2").isConfigSet())
-                run.setVisible(true);
-            else
-                run.setVisible(false);
-            classOrCluster = true;
-            key = "class2";
-        });
-        class3.setOnAction(event -> {
-            if(classificationConfigHashMap.get("class3").isConfigSet())
-                run.setVisible(true);
-            else
-                run.setVisible(false);
-            classOrCluster = true;
-            key = "class3";
-        });
-        clust1.setOnAction(event -> {
-            if(clusterConfigHashMap.get("clust1").isConfigSet())
-                run.setVisible(true);
-            else
-                run.setVisible(false);
-            classOrCluster = false;
-            key = "clust1";
-        });
-        clust2.setOnAction(event -> {
-            if(clusterConfigHashMap.get("clust2").isConfigSet())
-                run.setVisible(true);
-            else
-                run.setVisible(false);
-            classOrCluster = false;
-            key = "clust2";
-        });
-        clust3.setOnAction(event -> {
-            if(clusterConfigHashMap.get("clust3").isConfigSet())
-                run.setVisible(true);
-            else
-                run.setVisible(false);
-            classOrCluster = false;
-            key = "clust3";
-        });
-        classRun1.setOnAction(event -> {
-            Text text = new Text("Max Iteration");
-            Text text1 = new Text("Update Interval");
-            Text text2 = new Text("Continuous Run?");
-            Button save = new Button("Save");
-            ClassificationConfig a = classificationConfigHashMap.get("class1");
-            Stage stage = new Stage();
-            GridPane gridPane = new GridPane();
-            Scene scene = new Scene(gridPane);
-            TextField textField = new TextField();
-            TextField textField1 = new TextField();
-            CheckBox checkBox = new CheckBox();
-            textField.setText(String.valueOf(a.getMaxIntegers()));
-            textField1.setText(String.valueOf(a.getUpdateInterval()));
-            checkBox.setSelected(a.isContinuousRun());
-            gridPane.add(text, 0, 0);
-            gridPane.add(text1, 0, 2);
-            gridPane.add(text2, 0, 4);
-            gridPane.add(save, 0, 5);
-            gridPane.add(textField, 1, 0);
-            gridPane.add(textField1, 1, 2);
-            gridPane.add(checkBox, 1, 4);
-            stage.setScene(scene);
-            stage.show();
-            save.setOnAction(event1 -> {
-                while(true) {
-                    try {
-                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
-                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
-                        a.setContinuousRun(checkBox.isSelected());
-                        a.setConfigSet(true);
-                        if(buttons.getSelectedToggle().equals(class1))
+            try{
+                run.setDisable(false);
+                Class [] classes = getClasses("Algorithms.classification");
+                int i = 0;
+                for(Class c : classes){
+                    String [] strings = c.getName().split("\\.");
+                    String name = strings[strings.length -1];
+                    Algorithm algorithm = (Algorithm) c.getConstructor().newInstance();
+                    classificationConfigHashMap.put(name, new ClassificationConfig());
+                    RadioButton radioButton = new RadioButton(name);
+                    radioButton.setUserData(algorithm);
+                    radioButton.setToggleGroup(buttons);
+                    algButtons.add(radioButton, 0,i);
+                    Button button = new Button("Options");
+                    algButtons.add(button, 1, i);
+                    radioButton.setOnAction(event1 -> {
+                        if(classificationConfigHashMap.get(name).isConfigSet()) {
                             run.setVisible(true);
-                        stage.close();
-                        break;
-                    }catch (Exception e){
-                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
+
                         }
-                        stage.close();
-                        break;
-                }
-            });
-        });
-        classRun2.setOnAction(event -> {
-            Text text = new Text("Max Iteration");
-            Text text1 = new Text("Update Interval");
-            Text text2 = new Text("Continuous Run?");
-            Button save = new Button("Save");
-            ClassificationConfig a = classificationConfigHashMap.get("class2");
-            Stage stage = new Stage();
-            GridPane gridPane = new GridPane();
-            Scene scene = new Scene(gridPane);
-            TextField textField = new TextField();
-            TextField textField1 = new TextField();
-            CheckBox checkBox = new CheckBox();
-            textField.setText(String.valueOf(a.getMaxIntegers()));
-            textField1.setText(String.valueOf(a.getUpdateInterval()));
-            checkBox.setSelected(a.isContinuousRun());
-            gridPane.add(text, 0, 0);
-            gridPane.add(text1, 0, 2);
-            gridPane.add(text2, 0, 4);
-            gridPane.add(save, 0, 5);
-            gridPane.add(textField, 1, 0);
-            gridPane.add(textField1, 1, 2);
-            gridPane.add(checkBox, 1, 4);
-            stage.setScene(scene);
-            stage.show();
-            save.setOnAction(event1 -> {
-                while(true) {
-                    try {
-                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
-                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
-                        a.setContinuousRun(checkBox.isSelected());
-                        a.setConfigSet(true);
-                        if(buttons.getSelectedToggle().equals(class2))
-                            run.setVisible(true);
-                        stage.close();
-                        break;
-                    }catch (Exception e){
-                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
-                    }
-                    stage.close();
-                    break;
-                }
-            });
-        });
-        classRun3.setOnAction(event -> {
-            Text text = new Text("Max Iteration");
-            Text text1 = new Text("Update Interval");
-            Text text2 = new Text("Continuous Run?");
-            Button save = new Button("Save");
-            ClassificationConfig a = classificationConfigHashMap.get("class3");
-            Stage stage = new Stage();
-            GridPane gridPane = new GridPane();
-            Scene scene = new Scene(gridPane);
-            TextField textField = new TextField();
-            TextField textField1 = new TextField();
-            CheckBox checkBox = new CheckBox();
-            textField.setText(String.valueOf(a.getMaxIntegers()));
-            textField1.setText(String.valueOf(a.getUpdateInterval()));
-            checkBox.setSelected(a.isContinuousRun());
-            gridPane.add(text, 0, 0);
-            gridPane.add(text1, 0, 2);
-            gridPane.add(text2, 0, 4);
-            gridPane.add(save, 0, 5);
-            gridPane.add(textField, 1, 0);
-            gridPane.add(textField1, 1, 2);
-            gridPane.add(checkBox, 1, 4);
-            stage.setScene(scene);
-            stage.show();
-            save.setOnAction(event1 -> {
-                while(true) {
-                    try {
-                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
-                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
-                        a.setContinuousRun(checkBox.isSelected());
-                        a.setConfigSet(true);
-                        if(buttons.getSelectedToggle().equals(class3))
-                            run.setVisible(true);
-                        stage.close();
-                        break;
-                    }catch (Exception e){
-                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
-                    }
-                    stage.close();
-                    break;
-                }
-            });
-        });
-        clustRun1.setOnAction(event -> {
-            Text text = new Text("Max Iteration");
-            Text text1 = new Text("Update Interval");
-            Text text2 = new Text("Continuous Run?");
-            Text text3 = new Text("Number of Clusters");
-            Button save = new Button("Save");
-            ClusterConfig a = clusterConfigHashMap.get("clust1");
-            Stage stage = new Stage();
-            GridPane gridPane = new GridPane();
-            Scene scene = new Scene(gridPane);
-            TextField textField = new TextField();
-            TextField textField1 = new TextField();
-            TextField textField2 = new TextField();
-            CheckBox checkBox = new CheckBox();
-            textField.setText(String.valueOf(a.getMaxIntegers()));
-            textField1.setText(String.valueOf(a.getUpdateInterval()));
-            textField2.setText(String.valueOf(a.getNumClusters()));
-            checkBox.setSelected(a.isContinuousRun());
-            gridPane.add(text, 0, 0);
-            gridPane.add(text1, 0, 2);
-            gridPane.add(text2, 0, 4);
-            gridPane.add(text3, 0, 6);
-            gridPane.add(save, 0, 8);
-            gridPane.add(textField, 1, 0);
-            gridPane.add(textField1, 1, 2);
-            gridPane.add(textField2, 1, 4);
-            gridPane.add(checkBox, 1, 6);
-            stage.setScene(scene);
-            stage.show();
-            save.setOnAction(event1 -> {
-                while(true) {
-                    try {
-                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
-                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
-                        a.setContinuousRun(checkBox.isSelected());
-                        a.setNumClusters(Integer.parseInt(textField2.getText()));
-                        if(buttons.getSelectedToggle().equals(clust1))
-                            run.setVisible(true);
-                        else
+                        else {
                             run.setVisible(false);
-                        stage.close();
-                        break;
-                    }catch (Exception e){
-                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
-                    }
-                    stage.close();
-                    break;
-                }
-            });
-        });
-        clustRun2.setOnAction(event -> {
-            Text text = new Text("Max Iteration");
-            Text text1 = new Text("Update Interval");
-            Text text2 = new Text("Continuous Run?");
-            Text text3 = new Text("Number of Clusters");
-            Button save = new Button("Save");
-            ClusterConfig a = clusterConfigHashMap.get("clust2");
-            Stage stage = new Stage();
-            GridPane gridPane = new GridPane();
-            Scene scene = new Scene(gridPane);
-            TextField textField = new TextField();
-            TextField textField1 = new TextField();
-            TextField textField2 = new TextField();
-            CheckBox checkBox = new CheckBox();
-            textField.setText(String.valueOf(a.getMaxIntegers()));
-            textField1.setText(String.valueOf(a.getUpdateInterval()));
-            textField2.setText(String.valueOf(a.getNumClusters()));
-            checkBox.setSelected(a.isContinuousRun());
-            gridPane.add(text, 0, 0);
-            gridPane.add(text1, 0, 2);
-            gridPane.add(text2, 0, 4);
-            gridPane.add(text3, 0, 6);
-            gridPane.add(save, 0, 8);
-            gridPane.add(textField, 1, 0);
-            gridPane.add(textField1, 1, 2);
-            gridPane.add(textField2, 1, 4);
-            gridPane.add(checkBox, 1, 6);
-            stage.setScene(scene);
-            stage.show();
-            save.setOnAction(event1 -> {
-                while(true) {
-                    try {
-                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
-                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
-                        a.setContinuousRun(checkBox.isSelected());
-                        a.setNumClusters(Integer.parseInt(textField2.getText()));
-                        if(buttons.getSelectedToggle().equals(clust2))
-                            run.setVisible(true);
-                        else
-                            run.setVisible(false);
-                        stage.close();
-                        break;
-                    }catch (Exception e){
-                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
-                    }
-                    stage.close();
-                    break;
-                }
-            });
-        });
-        clustRun3.setOnAction(event -> {
-            Text text = new Text("Max Iteration");
-            Text text1 = new Text("Update Interval");
-            Text text2 = new Text("Continuous Run?");
-            Text text3 = new Text("Number of Clusters");
-            Button save = new Button("Save");
-            ClusterConfig a = clusterConfigHashMap.get("clust3");
-            Stage stage = new Stage();
-            GridPane gridPane = new GridPane();
-            Scene scene = new Scene(gridPane);
-            TextField textField = new TextField();
-            TextField textField1 = new TextField();
-            TextField textField2 = new TextField();
-            CheckBox checkBox = new CheckBox();
-            textField.setText(String.valueOf(a.getMaxIntegers()));
-            textField1.setText(String.valueOf(a.getUpdateInterval()));
-            textField2.setText(String.valueOf(a.getNumClusters()));
-            checkBox.setSelected(a.isContinuousRun());
-            gridPane.add(text, 0, 0);
-            gridPane.add(text1, 0, 2);
-            gridPane.add(text2, 0, 4);
-            gridPane.add(text3, 0, 6);
-            gridPane.add(save, 0, 8);
-            gridPane.add(textField, 1, 0);
-            gridPane.add(textField1, 1, 2);
-            gridPane.add(textField2, 1, 4);
-            gridPane.add(checkBox, 1, 6);
-            stage.setScene(scene);
-            stage.show();
-            save.setOnAction(event1 -> {
-                while(true) {
-                    try {
-                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
-                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
-                        a.setContinuousRun(checkBox.isSelected());
-                        a.setNumClusters(Integer.parseInt(textField2.getText()));
-                        if(buttons.getSelectedToggle().equals(clust3))
-                            run.setVisible(true);
-                        else
-                            run.setVisible(false);
-                        stage.close();
-                        break;
-                    }catch (Exception e){
-                        ErrorDialog.getDialog().show("Invalid Parameter", "Reenter Parameters");
-                    }
-                    stage.close();
-                    break;
-                }
-            });
-        });
-        run.setOnAction(event -> {
-            try {
-                if (classOrCluster) {
-                    if (key.equals("class1")) {
-                        ClassificationConfig c = classificationConfigHashMap.get(key);
-                        if (c.getUpdateInterval() <= 0)
-                            throw new Exception();
-                        if (c.getUpdateInterval() <= 0)
-                            throw new Exception();
-                        nextButton.setVisible(false);
-                        chart.getData().clear();
-                        ((AppData) applicationTemplate.getDataComponent()).clear();
-                        ((AppData) applicationTemplate.getDataComponent()).loadData(textArea.getText());
-                        ((AppData) applicationTemplate.getDataComponent()).displayData();
-                        algorithm.setMaxIterations(c.getMaxIntegers());
-                        algorithm.setApplicationTemplate(applicationTemplate);
-                        algorithm.setUpdateInterval(c.getUpdateInterval());
-                        algorithm.setTocontinue(c.isContinuousRun());
-                        thread = new Thread(algorithm);
-                        thread.start();
-                        System.out.println(thread.getState());
-                    }
+                        }
+                        classOrCluster = true;
+                        key = name;
+                    });
+                    button.setOnAction(event1 -> {
+                        Text text = new Text("Max Iteration");
+                        Text text1 = new Text("Update Interval");
+                        Text text2 = new Text("Continuous Run?");
+                        Button save = new Button("Save");
+                        ClassificationConfig a = classificationConfigHashMap.get(name);
+                        Stage stage = new Stage();
+                        GridPane gridPane = new GridPane();
+                        Scene scene = new Scene(gridPane);
+                        TextField textField = new TextField();
+                        TextField textField1 = new TextField();
+                        CheckBox checkBox = new CheckBox();
+                        textField.setText(String.valueOf(a.getMaxIntegers()));
+                        textField1.setText(String.valueOf(a.getUpdateInterval()));
+                        checkBox.setSelected(a.isContinuousRun());
+                        gridPane.add(text, 0, 0);
+                        gridPane.add(text1, 0, 2);
+                        gridPane.add(text2, 0, 4);
+                        gridPane.add(save, 0, 5);
+                        gridPane.add(textField, 1, 0);
+                        gridPane.add(textField1, 1, 2);
+                        gridPane.add(checkBox, 1, 4);
+                        stage.setScene(scene);
+                        stage.show();
+                        save.setOnAction(event2 -> {
+                            while(true) {
+                                String error = "";
+                                boolean errorBoolean = false;
+                                try {
+                                    try {
+                                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
+                                        if (Integer.parseInt(textField.getText()) <= 0) {
+                                            throw new Exception();
+                                        }
+                                    }catch (Exception e){
+                                        error += "Invalid max Integers, reset to 1\n";
+                                        errorBoolean = true;
+                                        a.setMaxIntegers(1);
+                                    }
+                                    try {
+                                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
+                                        if (Integer.parseInt(textField1.getText()) <= 0) {
+                                            throw new Exception();
+                                        }
+                                    }catch (Exception e){
+                                        error += "Invalid Update Interval, reset to 1\n";
+                                        errorBoolean = true;
+                                        a.setUpdateInterval(1);
+                                    }
+                                    a.setContinuousRun(checkBox.isSelected());
+                                    a.setConfigSet(true);
+                                    if(radioButton.isSelected())
+                                        run.setVisible(true);
+                                    else
+                                        run.setVisible(false);
+                                    if(checkBox.isSelected())
+                                        nextButton.setVisible(false);
+                                    if(errorBoolean)
+                                        throw new Exception(error);
+                                    stage.close();
+                                    break;
+                                }catch (Exception e){
+                                    ErrorDialog.getDialog().show("Error", e.getMessage());
+                                }
+                                stage.close();
+                                break;
+                            }
+                        });
+                    });
+                    i++;
                 }
             }catch (Exception e){
-                ErrorDialog.getDialog().show("Error", "Config invalid");
+            }
+            Clustering.setVisible(false);
+            Classification.setVisible(false);
+        });
+        Clustering.setOnAction(event -> {
+            try {
+                run.setDisable(false);
+                Class [] classes = getClasses("Algorithms.clustering");
+                int i = 0;
+                for(Class c : classes){
+                    String [] strings = c.getName().split("\\.");
+                    String name = strings[strings.length -1];
+                    Algorithm algorithm = (Algorithm) c.getConstructor().newInstance();
+                    clusterConfigHashMap.put(name, new ClusterConfig());
+                    RadioButton radioButton = new RadioButton(name);
+                    radioButton.setToggleGroup(buttons);
+                    radioButton.setUserData(algorithm);
+                    algButtons.add(radioButton, 0,i);
+                    Button button = new Button("Options");
+                    algButtons.add(button, 1, i);
+                    radioButton.setOnAction(event1 -> {
+                        if(clusterConfigHashMap.get(name).isConfigSet()) {
+                            run.setVisible(true);
+                        }
+                        else {
+                            run.setVisible(false);
+                        }
+                        classOrCluster = false;
+                        key = name;
+                    });
+                    button.setOnAction(event1 -> {
+                        Text text = new Text("Max Iteration");
+                        Text text1 = new Text("Update Interval");
+                        Text text2 = new Text("Number of Clusters");
+                        Text text3 = new Text("Continuous Run?");
+                        Button save = new Button("Save");
+                        ClusterConfig a = clusterConfigHashMap.get(name);
+                        Stage stage = new Stage();
+                        GridPane gridPane = new GridPane();
+                        Scene scene = new Scene(gridPane);
+                        TextField textField = new TextField();
+                        TextField textField1 = new TextField();
+                        TextField textField2 = new TextField();
+                        CheckBox checkBox = new CheckBox();
+                        textField.setText(String.valueOf(a.getMaxIntegers()));
+                        textField1.setText(String.valueOf(a.getUpdateInterval()));
+                        textField2.setText(String.valueOf(a.getNumClusters()));
+                        checkBox.setSelected(a.isContinuousRun());
+                        gridPane.add(text, 0, 0);
+                        gridPane.add(text1, 0, 2);
+                        gridPane.add(text2, 0, 4);
+                        gridPane.add(text3, 0, 6);
+                        gridPane.add(save, 0, 8);
+                        gridPane.add(textField, 1, 0);
+                        gridPane.add(textField1, 1, 2);
+                        gridPane.add(textField2, 1, 4);
+                        gridPane.add(checkBox, 1, 6);
+                        stage.setScene(scene);
+                        stage.show();
+                        save.setOnAction(event2 -> {
+                            while(true) {
+                                try {
+                                    String error = "";
+                                    boolean errorBoolean = false;
+                                    try {
+                                        a.setMaxIntegers(Integer.parseInt(textField.getText()));
+                                        if (Integer.parseInt(textField.getText()) <= 0) {
+                                            throw new Exception();
+                                        }
+                                    }catch (Exception e){
+                                        error += "Invalid max Integers, reset to 1\n";
+                                        errorBoolean = true;
+                                        a.setMaxIntegers(1);
+                                    }
+                                    try {
+                                        a.setUpdateInterval(Integer.parseInt(textField1.getText()));
+                                        if (Integer.parseInt(textField1.getText()) <= 0) {
+                                            throw new Exception();
+                                        }
+                                    }catch (Exception e){
+                                        error += "Inavlid Update Interval, reset to 1\n";
+                                        errorBoolean = true;
+                                        a.setUpdateInterval(1);
+                                    }
+                                    a.setContinuousRun(checkBox.isSelected());
+                                    try {
+                                        a.setNumClusters(Integer.parseInt(textField2.getText()));
+                                        if (Integer.parseInt(textField2.getText()) < 2) {
+                                            a.setNumClusters(2);
+                                            throw new Exception("Invalid Number of clusters cannot be less than 2, set to 2\n");
+                                        }
+                                        if(Integer.parseInt(textField2.getText())>4){
+                                            a.setNumClusters(4);
+                                            throw new Exception("Invalid number of clusters, cannot be greater than 4, set to 4\n");
+                                        }
+                                    }catch (Exception e){
+                                        error += e.getMessage();
+                                        errorBoolean = true;
+                                    }
+                                    if(radioButton.isSelected())
+                                        run.setVisible(true);
+                                    else
+                                        run.setVisible(false);
+                                    if(checkBox.isSelected())
+                                        nextButton.setVisible(false);
+                                    a.setConfigSet(true);
+                                    if(errorBoolean)
+                                        throw new Exception(error);
+                                    stage.close();
+                                    break;
+                                }catch (Exception e){
+                                    ErrorDialog.getDialog().show("Error", e.getMessage());
+                                }
+                                stage.close();
+                                break;
+                            }
+                        });
+                    });
+                    i++;
+                }
+            }catch (Exception e){
+            }
+            Clustering.setVisible(false);
+            Classification.setVisible(false);
+        });
+
+        run.setOnAction(event -> {
+            try {
+                Class c = buttons.getSelectedToggle().getUserData().getClass();
+                String[] strings = c.getName().split("\\.");
+                if (strings[strings.length - 2].equals("classification")) {
+                    ClassificationConfig config = classificationConfigHashMap.get(strings[strings.length - 1]);
+                    thread = new Thread((Algorithm) c.getConstructor(DataSet.class, int.class, int.class, boolean.class, ApplicationTemplate.class)
+                            .newInstance(new DataSet(((AppData) applicationTemplate.getDataComponent()).getDataLabels(),
+                                            ((AppData) applicationTemplate.getDataComponent()).getDataPoints()), config.getMaxIntegers(),
+                                    config.getUpdateInterval(), config.isContinuousRun(), applicationTemplate));
+                    nextButton.setVisible(false);
+//                    chart.getData().clear();
+//                    ((AppData) applicationTemplate.getDataComponent()).clear();
+//                    ((AppData) applicationTemplate.getDataComponent()).loadData(((AppData)applicationTemplate.getDataComponent()).getP());
+//                    ((AppData) applicationTemplate.getDataComponent()).displayData();
+                    thread.start();
+                }
+                if (strings[strings.length - 2].equals("clustering")) {
+                    ClusterConfig config = clusterConfigHashMap.get(strings[strings.length - 1]);
+                    thread = new Thread((Algorithm) c.getConstructor(int.class, DataSet.class, int.class, int.class, boolean.class, ApplicationTemplate.class)
+                            .newInstance(config.getNumClusters(), new DataSet(((AppData) applicationTemplate.getDataComponent()).getDataLabels(),
+                                            ((AppData) applicationTemplate.getDataComponent()).getDataPoints()), config.getMaxIntegers(),
+                                    config.getUpdateInterval(), config.isContinuousRun(), applicationTemplate));
+//                    chart.getData().clear();
+//                    ((AppData) applicationTemplate.getDataComponent()).clear();
+//                    ((AppData) applicationTemplate.getDataComponent()).loadData(textArea.getText());
+//                    ((AppData) applicationTemplate.getDataComponent()).displayData();
+                    thread.start();
+                }
+            }catch (Exception e){
             }
         });
         nextButton.setOnAction(event -> {
@@ -792,13 +594,11 @@ public final class AppUI extends UITemplate {
                     thread.notify();
                 }
                 catch (Exception e){
-                    e.printStackTrace();
                 }
             }
         });
 
     }
-
     private void setTextAreaActions() {
         textArea.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
@@ -830,11 +630,43 @@ public final class AppUI extends UITemplate {
                     ((AppData) applicationTemplate.getDataComponent()).loadData(textArea.getText());
                     scrnshotButton.setDisable(false);
                 } catch (Exception e) {
-                    e.printStackTrace();
                 }
 
             }
         });
+    }
+    private static Class[] getClasses(String packageName)
+            throws ClassNotFoundException, IOException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        assert classLoader != null;
+        String path = packageName.replace('.', '/');
+        Enumeration<URL> resources = classLoader.getResources(path);
+        List<File> dirs = new ArrayList<File>();
+        while (resources.hasMoreElements()) {
+            URL resource = resources.nextElement();
+            dirs.add(new File(resource.getFile()));
+        }
+        ArrayList<Class> classes = new ArrayList<Class>();
+        for (File directory : dirs) {
+            classes.addAll(findClasses(directory, packageName));
+        }
+        return classes.toArray(new Class[classes.size()]);
+    }
+    private static List<Class> findClasses(File directory, String packageName) throws ClassNotFoundException {
+        List<Class> classes = new ArrayList<Class>();
+        if (!directory.exists()) {
+            return classes;
+        }
+        File[] files = directory.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                assert !file.getName().contains(".");
+                classes.addAll(findClasses(file, packageName + "." + file.getName()));
+            } else if (file.getName().endsWith(".class")) {
+                classes.add(Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
+            }
+        }
+        return classes;
     }
 
 }

@@ -61,9 +61,16 @@ public final class TSDProcessor {
         return dataPoints;
     }
 
+    public Map<String, String> getDataLabels() {
+        return dataLabels;
+    }
+
+    public void setDataLabels(Map<String, String> dataLabels) {
+        this.dataLabels = dataLabels;
+    }
+
     private ArrayList<String> labels;
     private AtomicInteger counter;
-    private AtomicInteger nullLabel;
 
     public AtomicInteger getCounter() {
         return counter;
@@ -73,9 +80,7 @@ public final class TSDProcessor {
         return labels;
     }
 
-    public AtomicInteger getNullLabel() {
-        return nullLabel;
-    }
+
 
     public TSDProcessor() {
         dataLabels = new HashMap<>();
@@ -100,10 +105,9 @@ public final class TSDProcessor {
     public void processString(String tsdString) throws Exception {
         AtomicBoolean hadAnError   = new AtomicBoolean(false);
         StringBuilder errorMessage = new StringBuilder();
-        counter = new AtomicInteger(1);
+        counter = new AtomicInteger(0);
         ArrayList<String> strings = new ArrayList<>();
         labels = new ArrayList<String>();
-        nullLabel = new AtomicInteger(0);
 
         Stream.of(tsdString.split("\n"))
               .map(line -> Arrays.asList(line.split("\t")))
@@ -124,18 +128,16 @@ public final class TSDProcessor {
                           if(!label.equals("null"))
                               labels.add(label);
                       }
-                      if(label.equals("null"))
-                          nullLabel.getAndIncrement();
                       strings.add(name);
                       counter.getAndIncrement();
                   } catch (InvalidDataNameException e) {
                       errorMessage.setLength(0);
-                      errorMessage.append("Invalid Data Name at line " + counter.toString() + " \n");
+                      errorMessage.append(" Invalid Data Name at line " + counter.toString() + " \n");
                       hadAnError.set(true);
                   }
                   catch (Exception e){
                       errorMessage.setLength(0);
-                      errorMessage.append("Duplicate Data Name at line" + counter.toString() + " \n");
+                      errorMessage.append(" Duplicate Data Name at line" + counter.toString() + " \n");
                       hadAnError.set(true);
                   }
               });
@@ -154,29 +156,29 @@ public final class TSDProcessor {
 
         HashSet<Point2D> data = new HashSet<>(dataPoints.values());
 
-        double minimum = 100000000;
-        double maximum = 0;
-        double sumOfY = 0;
-
-        for (Point2D x: data) {
-            if(x.getX() < minimum)
-                minimum = x.getX();
-            if(x.getY() > maximum)
-                maximum = x.getY();
-            sumOfY += x.getY();
-        }
-
-        double average = (sumOfY)/data.size();
-
-        averageLine = new XYChart.Series<>();
-
-        averageLine.getData().add(new XYChart.Data<>(minimum, average));
-        averageLine.getData().add(new XYChart.Data<>(maximum, average));
-        averageLine.setName("Average Line");
+//        double minimum = 100000000;
+//        double maximum = 0;
+//        double sumOfY = 0;
+//
+//        for (Point2D x: data) {
+//            if(x.getX() < minimum)
+//                minimum = x.getX();
+//            if(x.getY() > maximum)
+//                maximum = x.getY();
+//            sumOfY += x.getY();
+//        }
+//
+//        double average = (sumOfY)/data.size();
+//
+//        averageLine = new XYChart.Series<>();
+//
+//        averageLine.getData().add(new XYChart.Data<>(minimum, average));
+//        averageLine.getData().add(new XYChart.Data<>(maximum, average));
+//        averageLine.setName("Average Line");
 
         ArrayList<String> names = new ArrayList<>();
 
-        boolean added = false;
+//        boolean added = false;
         Set<String> labels = new HashSet<>(dataLabels.values());
         for (String label : labels) {
             XYChart.Series<Number, Number> series = new XYChart.Series<>();
@@ -186,25 +188,25 @@ public final class TSDProcessor {
                 series.getData().add(new XYChart.Data<>(point.getX(), point.getY()));
             });
             chart.getData().add(series);
-            if(!added){
-                chart.getData().add(averageLine);
-                added = true;
-            }
+//            if(!added){
+//                chart.getData().add(averageLine);
+//                added = true;
+//            }
         }
         chart.getData().forEach((x) ->{
-            if(!x.getName().equals("Average Line")){
+//            if(!x.getName().equals("Average Line")){
                 x.getNode().setId("css1");
                 x.getNode().setStyle("-fx-stroke: transparent");
                 x.getData().forEach((y) ->{
                     Tooltip.install(y.getNode(), new Tooltip(getKey(y)));
                     y.getNode().setCursor(Cursor.HAND);
                 });
-            }
-            else{
-                x.getData().forEach((y) ->{
-                    y.getNode().setId("css2");
-                });
-            }
+//            }
+//            else{
+//                x.getData().forEach((y) ->{
+//                    y.getNode().setId("css2");
+//                });
+//            }
         });
     }
 

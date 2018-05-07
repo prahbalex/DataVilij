@@ -32,7 +32,11 @@ public class ClusterConfig implements Config{
     }
 
     public ClusterConfig(){
-
+        this.maxIntegers = 0;
+        this.updateInterval = 0;
+        this.continuousRun = false;
+        this.numClusters = 0;
+        this.configSet = false;
     }
 
     public int getMaxIntegers() {

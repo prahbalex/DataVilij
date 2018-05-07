@@ -1,5 +1,7 @@
 package dataprocessors;
 
+import actions.AppActions;
+import javafx.geometry.Point2D;
 import settings.AppPropertyTypes;
 import ui.AppUI;
 import vilij.components.DataComponent;
@@ -14,6 +16,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,6 +33,10 @@ public class AppData implements DataComponent {
     private Boolean error;
     private Path p;
 
+    public Path getP() {
+        return p;
+    }
+
     public Boolean getError() {
         return error;
     }
@@ -42,8 +49,12 @@ public class AppData implements DataComponent {
         return processor.getLabels();
     }
 
-    public AtomicInteger getNullLabel(){
-        return processor.getNullLabel();
+    public Map<String, String> getDataLabels(){
+        return processor.getDataLabels();
+    }
+
+    public Map<String, Point2D> getDataPoints(){
+        return processor.getDataPoints();
     }
 
     public TSDProcessor getProcessor() {
@@ -96,20 +107,21 @@ public class AppData implements DataComponent {
         String hide = "";
 
         String [] data2 = dataString.split("\n");
-        for(int i = 0; (i< 10 && i < data2.length); i ++){
-            show += data2[i] + "\n";
-            numLines++;
+        if(((AppActions)applicationTemplate.getActionComponent()).isRunOrLoad()) {
+            for (int i = 0; (i < 10 && i < data2.length); i++) {
+                show += data2[i] + "\n";
+                numLines++;
+            }
+            for (int i = 10; i < data2.length; i++) {
+                hide += data2[i] + "\n";
+                numLines++;
+            }
+            if (numLines > 10) {
+                ErrorDialog errorDialog = ErrorDialog.getDialog();
+                errorDialog.show("Error", "Loaded data consists of " + numLines + " . Showing first 10");
+            }
+            ((AppUI) applicationTemplate.getUIComponent()).setCurrentText(show);
         }
-        for(int i = 10; i < data2.length; i++){
-            hide += data2[i] + "\n";
-            numLines++;
-        }
-        if(numLines >10){
-            ErrorDialog errorDialog =  ErrorDialog.getDialog();
-            errorDialog.show("Error", "Loaded data consists of " + numLines + " . Showing first 10");
-        }
-        ((AppUI)applicationTemplate.getUIComponent()).setCurrentText(show);
-//        displayData();
         error = false;
     }
 

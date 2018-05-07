@@ -50,12 +50,19 @@ public final class AppActions implements ActionComponent {
         this.isUnsaved = new SimpleBooleanProperty(false);
     }
 
+    private boolean runOrLoad;
+
+    public boolean isRunOrLoad() {
+        return runOrLoad;
+    }
+
     public void setIsUnsavedProperty(boolean property) { isUnsaved.set(property); }
 
     public boolean getIsUnsvaedProperty() { return isUnsaved.getValue();}
 
     @Override
     public void handleNewRequest() {
+        runOrLoad = false;
         ((AppUI)applicationTemplate.getUIComponent()).disableAll();
         ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setVisible(true);
         ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setDisable(false);
@@ -88,9 +95,14 @@ public final class AppActions implements ActionComponent {
 
     @Override
     public void handleLoadRequest() {
+        runOrLoad = true;
         ((AppUI)applicationTemplate.getUIComponent()).clear();
+        ((AppData)applicationTemplate.getDataComponent()).clear();
         ((AppUI)applicationTemplate.getUIComponent()).disableAll();
         FileChooser fileChooser = new FileChooser();
+        ExtensionFilter extFilter = new ExtensionFilter("Tab-Separated Data File",
+                "*.tsd");
+        fileChooser.getExtensionFilters().add(extFilter);
         File file = fileChooser.showOpenDialog(new Stage());
         if(file == null)
             return;
@@ -102,8 +114,8 @@ public final class AppActions implements ActionComponent {
             ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setDisable(true);
             ((AppUI) applicationTemplate.getUIComponent()).getChart().setVisible(true);
             ((AppUI) applicationTemplate.getUIComponent()).getLeftPanelTitle().setVisible(true);
-            ((AppUI)applicationTemplate.getUIComponent()).getDisplayButton().setVisible(true);
-            ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(true);
+            ((AppUI)applicationTemplate.getUIComponent()).getDisplayButton().setVisible(false);
+            ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(false);
             ((AppUI) applicationTemplate.getUIComponent()).getScrnshotButton().setDisable(false);
             String text = "\t" + ((AppData)applicationTemplate.getDataComponent()).getCounter() + " number of " +
                     "instances \n \t " + ((AppData)applicationTemplate.getDataComponent()).getLabels().size() + " number of" +
@@ -112,7 +124,7 @@ public final class AppActions implements ActionComponent {
                     .toString() + "\n";
             ((AppUI)applicationTemplate.getUIComponent()).setMetaData(text);
             ((AppUI)applicationTemplate.getUIComponent()).getMetaData().setVisible(true);
-            if((((AppData) applicationTemplate.getDataComponent()).getNullLabel().get()==2))
+            if((((AppData) applicationTemplate.getDataComponent()).getLabels().size() ==2))
                 ((AppUI) applicationTemplate.getUIComponent()).getClassification().setVisible(true);
             ((AppUI)applicationTemplate.getUIComponent()).getClustering().setVisible(true);
             ((AppUI)applicationTemplate.getUIComponent()).getSave().setDisable(true);
@@ -189,8 +201,8 @@ public final class AppActions implements ActionComponent {
 
                 String description = manager.getPropertyValue(AppPropertyTypes.DATA_FILE_EXT_DESC.name());
                 String extension   = manager.getPropertyValue(AppPropertyTypes.DATA_FILE_EXT.name());
-                ExtensionFilter extFilter = new ExtensionFilter(String.format("%s (.*%s)", description, extension),
-                                                                String.format("*.%s", extension));
+                ExtensionFilter extFilter = new ExtensionFilter("Tab-Separated Data File",
+                                                                "*.tsd");
 
                 fileChooser.getExtensionFilters().add(extFilter);
                 File selected = fileChooser.showSaveDialog(applicationTemplate.getUIComponent().getPrimaryWindow());

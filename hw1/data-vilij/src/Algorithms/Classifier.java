@@ -1,4 +1,6 @@
-package dataprocessors;
+package Algorithms;
+
+import Algorithms.Algorithm;
 
 import java.util.List;
 

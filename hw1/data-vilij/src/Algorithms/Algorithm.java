@@ -1,4 +1,4 @@
-package dataprocessors;
+package Algorithms;
 
 import vilij.templates.ApplicationTemplate;
 
@@ -18,12 +18,5 @@ public interface Algorithm extends Runnable {
 
     boolean tocontinue();
 
-    void setApplicationTemplate(ApplicationTemplate applicationTemplate);
-
-    void setMaxIterations(int maxIterations);
-
-    void setUpdateInterval(int updateInterval);
-
-    void setTocontinue(boolean tocontinue);
 
 }

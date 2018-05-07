@@ -1,10 +1,17 @@
-package dataprocessors;
+package Algorithms.classification;
 
 
 
+import Algorithms.Classifier;
+import Algorithms.DataSet;
+import actions.AppActions;
+import dataprocessors.AppData;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
+import javafx.scene.control.RadioButton;
 import ui.AppUI;
 import vilij.templates.ApplicationTemplate;
 
@@ -28,8 +35,8 @@ public class RandomClassifier extends Classifier {
     // this mock classifier doesn't actually use the data, but a real classifier will
     private DataSet dataset;
 
-    private int maxIterations;
-    private int updateInterval;
+    private final int maxIterations;
+    private final int updateInterval;
 
     // currently, this value does not change after instantiation
     private AtomicBoolean tocontinue;
@@ -59,19 +66,13 @@ public class RandomClassifier extends Classifier {
     public RandomClassifier(DataSet dataset,
                             int maxIterations,
                             int updateInterval,
-                            boolean tocontinue) {
+                            boolean tocontinue,
+                            ApplicationTemplate applicationTemplate) {
         this.dataset = dataset;
         this.maxIterations = maxIterations;
         this.updateInterval = updateInterval;
         this.tocontinue = new AtomicBoolean(tocontinue);
-    }
-
-    public void setMaxIterations(int maxIterations) {
-        this.maxIterations = maxIterations;
-    }
-
-    public void setUpdateInterval(int updateInterval) {
-        this.updateInterval = updateInterval;
+        this.applicationTemplate = applicationTemplate;
     }
 
     public void setTocontinue(boolean tocontinue) {
@@ -85,6 +86,15 @@ public class RandomClassifier extends Classifier {
             ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(false);
             if(tocontinue())
                 ((AppUI)applicationTemplate.getUIComponent()).getRun().setDisable(true);
+            for(Node r :((AppUI)applicationTemplate.getUIComponent()).getAlgButtons().getChildren()){
+                if(r instanceof RadioButton){
+                    r.setDisable(true);
+                }
+                if(r instanceof Button){
+                    if(((Button) r).getText().equals("Options"))
+                        r.setDisable(true);
+                }
+            }
             int xCoefficient =  new Long(-1 * Math.round((2 * RAND.nextDouble() - 1) * 10)).intValue();
             int yCoefficient = 10;
             int constant     = RAND.nextInt(11);
@@ -105,13 +115,14 @@ public class RandomClassifier extends Classifier {
 
                 }
                 if(!tocontinue()){
+                    ((AppUI)applicationTemplate.getUIComponent()).getRun().setDisable(true);
                     ((AppUI)applicationTemplate.getUIComponent()).getNextButton().setVisible(true);
                     synchronized (((AppUI) applicationTemplate.getUIComponent()).getThread()) {
                         try {
                             ((AppUI)applicationTemplate.getUIComponent()).getScrnshotButton().setDisable(false);
                             ((AppUI) applicationTemplate.getUIComponent()).getThread().wait();
                             ((AppUI)applicationTemplate.getUIComponent()).getScrnshotButton().setDisable(true);
-                            Thread.sleep(2000);
+                            Thread.sleep(500);
                         }
                         catch (InterruptedException e){
                             e.printStackTrace();
@@ -124,7 +135,18 @@ public class RandomClassifier extends Classifier {
         }
         ((AppUI)applicationTemplate.getUIComponent()).getScrnshotButton().setDisable(false);
         ((AppUI)applicationTemplate.getUIComponent()).getRun().setDisable(false);
-        ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(true);
+        if (!((AppActions)applicationTemplate.getActionComponent()).isRunOrLoad())
+            ((AppUI)applicationTemplate.getUIComponent()).getCheckBox().setVisible(true);
+        ((AppUI)applicationTemplate.getUIComponent()).getNextButton().setVisible(false);
+        for(Node r :((AppUI)applicationTemplate.getUIComponent()).getAlgButtons().getChildren()){
+            if(r instanceof RadioButton){
+                r.setDisable(false);
+            }
+            if(r instanceof Button){
+                if(((Button) r).getText().equals("Options"))
+                    r.setDisable(false);
+            }
+        }
     }
 
     // for internal viewing only
@@ -132,14 +154,14 @@ public class RandomClassifier extends Classifier {
         System.out.printf("%d\t%d\t%d%n", output.get(0), output.get(1), output.get(2));
     }
 
-    /** A placeholder main method to just make sure this code runs smoothly */
-    public static void main(String... args) throws IOException {
-        DataSet          dataset    = DataSet.fromTSDFile(Paths.get("/path/to/some-data.tsd"));
-        RandomClassifier classifier = new RandomClassifier(dataset, 100, 5, true);
-        classifier.run(); // no multithreading yet
-    }
+//    /** A placeholder main method to just make sure this code runs smoothly */
+//    public static void main(String... args) throws IOException {
+//        DataSet          dataset    = DataSet.fromTSDFile(Paths.get("/path/to/some-data.tsd"));
+//        RandomClassifier classifier = new RandomClassifier(dataset, 100, 5, true,
+//                );
+//        classifier.run(); // no multithreading yet
+//    }
 
-    @Override
     public void setApplicationTemplate(ApplicationTemplate applicationTemplate) {
         this.applicationTemplate = applicationTemplate;
     }
@@ -171,7 +193,6 @@ public class RandomClassifier extends Classifier {
         random.getData().add(new XYChart.Data<>(minimumx, firstY));
         random.getData().add(new XYChart.Data<>(maximumx, secondY));
         random.setName("Random Line");
-
 
         ((AppUI)applicationTemplate.getUIComponent()).getChart().getData().add(random);
         (((AppData) applicationTemplate.getDataComponent()).getProcessor()).setAverageLine(random);

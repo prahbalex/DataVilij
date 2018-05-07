@@ -1,4 +1,4 @@
-package dataprocessors;
+package Algorithms;
 
 import javafx.geometry.Point2D;
 
@@ -50,6 +50,11 @@ public class DataSet {
     public DataSet() {
         labels = new HashMap<>();
         locations = new HashMap<>();
+    }
+
+    public DataSet(Map<String, String> labels, Map<String, Point2D> locations) {
+        this.labels = labels;
+        this.locations = locations;
     }
 
     public Map<String, String> getLabels()     { return labels; }
