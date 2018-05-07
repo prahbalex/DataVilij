@@ -129,8 +129,16 @@ public class AppData implements DataComponent {
     public void saveData(Path dataFilePath) {
         // NOTE: completing this method was not a part of HW 1. You may have implemented file saving from the
         // confirmation dialog elsewhere in a different way.
+//        try (PrintWriter writer = new PrintWriter(Files.newOutputStream(dataFilePath))) {
+//            writer.write(((AppUI) applicationTemplate.getUIComponent()).getCurrentText());
+//        } catch (IOException e) {
+//            System.err.println(e.getMessage());
+//        }
+        saveData(((AppUI) applicationTemplate.getUIComponent()).getCurrentText(),dataFilePath);
+    }
+    public void saveData(String s, Path dataFilePath){
         try (PrintWriter writer = new PrintWriter(Files.newOutputStream(dataFilePath))) {
-            writer.write(((AppUI) applicationTemplate.getUIComponent()).getCurrentText());
+            writer.write(s);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
